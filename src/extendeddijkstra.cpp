@@ -2,20 +2,18 @@
 #include <map>
 #include <utility>
 #include <set>
+#include <iostream>
 using namespace std;
 
 typedef char* Node;
 typedef map<char*,pair<char*,long>> Graph;
-
-int main(){
-	return 0;
-}
 
 map<Node, long>  extendedDijkstra( Node source, Graph graph ){
 	map<Node, set<Node>> node_map;
 	map<pair<Node,Node>, long> cost_map;
 	map<Node, long> answer_map;
 	map<Node, long> info_map;
+	cout << "passed" << endl;
 	//map<info_map: KEY=Node, VALUE=Info(INFINITY)
 	//info_map[source] = 0
 	//info_pq : pair(Node, Info)
@@ -36,3 +34,12 @@ map<Node, long>  extendedDijkstra( Node source, Graph graph ){
 	//        info_pq.percolate_up(pair(d, info_map[d]))
 	return answer_map;
 }	
+
+int main(){
+	Graph g;
+	Node start;
+	extendedDijkstra(start, g);
+	return 0;
+}
+
+
