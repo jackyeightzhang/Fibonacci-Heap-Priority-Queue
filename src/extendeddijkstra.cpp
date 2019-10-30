@@ -5,11 +5,12 @@
 #include <iostream>
 #include <limits.h>
 #include <algorithm>
+#include <map>
 using namespace std;
 
 typedef char Node;
 typedef int Info;
-typedef unordered_map<Node, pair<Node, Info>> Graph;
+typedef map<Node, pair<Node, Info>> Graph;
 
 void printGraph(const Graph & g){
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Graph%%%%%%%%%%%%%%%%%%%%%%" << endl;
@@ -18,8 +19,8 @@ void printGraph(const Graph & g){
 	}
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
 }
-void printCostMap(const unordered_map<pair<Node,Node>, Info> & c){}
-void printNodeMap(const unordered_map<Node, set<Node>> & n){
+void printCostMap(const map<pair<Node,Node>, Info> & c){}
+void printNodeMap(const map<Node, set<Node>> & n){
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Node Map%%%%%%%%%%%%%%%%%%%%%%" << endl;
 	for(auto it: n){
 		cout << it.first << "---";
@@ -38,8 +39,8 @@ void printInfoMap(const unordered_map<Node, Info> & pq){
 
 }
 unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
-	unordered_map<Node, set<Node>> node_map;
-	unordered_map<pair<Node,Node>, Info> cost_map;
+	map<Node, set<Node>> node_map;
+	map<pair<Node,Node>, Info> cost_map;
 	for(auto it : graph) { 			//initialize node_map with all the nodes and their reachable edges
 		if (node_map.find(it.first) == node_map.end()) node_map[it.first] = set<Node>();
 		node_map[it.first].insert(it.second.first);
@@ -82,7 +83,7 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 int main(){
 	Graph g;
 	for(int i = 0; i < 26; ++i){	
-		g['a'+i%26] = pair<Node, Info>(rand() % 26+'a',rand() % 26);
+		g['a'+i] = pair<Node, Info>(rand() % 26+'a',rand() % 26);
 		//PROBLEM - Resolved: we are going to rely on cost_map and node_map instead of extracting from Graph
 		//// there is a problem with the graph implementation because i cant have multiple keys	
 	}
@@ -91,5 +92,3 @@ int main(){
 	extendedDijkstra(start, g);
 	return 0;
 }
-
-
