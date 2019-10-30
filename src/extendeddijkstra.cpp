@@ -4,25 +4,48 @@
 #include <set>
 #include <iostream>
 #include <limits.h>
+#include <algorithm>
 using namespace std;
 
-typedef char* Node;
-typedef map<char*,pair<char*,long>> Graph;
+typedef char Node;
+typedef int Info;
+typedef map<Node, pair<Node, Info>> Graph;
 
-map<Node, long>  extendedDijkstra( Node source, Graph graph ){
-	map<Node, set<Node>> node_map;
-	for(auto it : graph) { //initialize node_map with all the nodes and their reachable edges
-		node_map[it.first].insert(it.second.first);
+void printGraph(const Graph & g){
+	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Graph%%%%%%%%%%%%%%%%%%%%%%" << endl;
+	for(auto it: g){
+		cout << it.first << "->" << it.second.first << "(" << it.second.second << ")" << endl;
 	}
-	map<pair<Node,Node>, long> cost_map;
-	map<Node, long> answer_map;
-	map<Node, long> info_map;
-	cout << "data structures initialized" << endl;
+	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
+}
+void printCostMap(const map<pair<Node,Node>, Info> & c){}
+void printNodeMap(const map<Node, set<Node>> & n){
+	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Node Map%%%%%%%%%%%%%%%%%%%%%%" << endl;
+	for(auto it: n){
+		cout << it.first << "---";
+		for(auto el : it.second) cout << el << ",";
+		cout << endl;
+	}
+	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
+
+}
+
+map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
+	map<Node, set<Node>> node_map;
+	map<pair<Node,Node>, Info> cost_map;
+	for(auto it : graph) { 			//initialize node_map with all the nodes and their reachable edges
+		if (node_map.find(it.first) == node_map.end()) node_map[it.first] = set<Node>();
+		node_map[it.first].insert(it.second.first);
+	}	
+	printNodeMap(node_map);	
+	map<Node, Info> answer_map;
+	map<Node, Info> info_map;
 	for(auto it : node_map){		//initialize info_map with all nodes and with Info to infinity
 		info_map[it.first] = LONG_MAX;
 	}
 	info_map[source] = 0;		//set source node distance to 0
-
+	
+	vector<pair<Node, Info>> info_pq;
 	//info_pq : pair(Node, Info)
 	//sorted by smallest distance 
 	//
@@ -44,6 +67,10 @@ map<Node, long>  extendedDijkstra( Node source, Graph graph ){
 
 int main(){
 	Graph g;
+	for(int i = 0; i < 26; ++i){
+		g['a'+i%26] = pair<Node, Info>(rand() % 26+'a',rand() % 26);// there is a problem with the graph implementation because i cant have multiple keys	
+	}
+	printGraph(g);
 	Node start;
 	extendedDijkstra(start, g);
 	return 0;
