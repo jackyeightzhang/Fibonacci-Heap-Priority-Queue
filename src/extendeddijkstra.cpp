@@ -10,7 +10,7 @@ using namespace std;
 
 typedef char Node;
 typedef int Info;
-typedef map<Node, pair<Node, Info>> Graph;
+typedef unordered_map<Node, pair<Node, Info>> Graph;
 
 void printGraph(const Graph & g){
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Graph%%%%%%%%%%%%%%%%%%%%%%" << endl;
@@ -20,7 +20,7 @@ void printGraph(const Graph & g){
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
 }
 void printCostMap(const map<pair<Node,Node>, Info> & c){}
-void printNodeMap(const map<Node, set<Node>> & n){
+void printNodeMap(const unordered_map<Node, set<Node>> & n){
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Node Map%%%%%%%%%%%%%%%%%%%%%%" << endl;
 	for(auto it: n){
 		cout << it.first << "---";
@@ -31,15 +31,18 @@ void printNodeMap(const map<Node, set<Node>> & n){
 
 }
 
-void printInfoMap(const unordered_map<Node, Info> & pq){
+void printInfoMap(const unordered_map<Node, Info> & im){
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Priority Queue%%%%%%%%%%%%%%%%%%%%%%" << endl;
-	for(auto it : pq)
+	for(auto it : im)
 		cout << it.first << "'s distance: " << it.second << endl;
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
 
 }
+
 unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
-	map<Node, set<Node>> node_map;
+	unordered_map<Node, set<Node>> node_map;
+	//PROBLEM
+	//we cant have pairs as key's for unordered maps	
 	map<pair<Node,Node>, Info> cost_map;
 	for(auto it : graph) { 			//initialize node_map with all the nodes and their reachable edges
 		if (node_map.find(it.first) == node_map.end()) node_map[it.first] = set<Node>();
@@ -88,7 +91,7 @@ int main(){
 		//// there is a problem with the graph implementation because i cant have multiple keys	
 	}
 	printGraph(g);
-	Node start;
+	Node start = 'a';
 	extendedDijkstra(start, g);
 	return 0;
 }
