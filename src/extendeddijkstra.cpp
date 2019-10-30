@@ -43,7 +43,7 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 	for(auto it : graph) { 			//initialize node_map with all the nodes and their reachable edges
 		if (node_map.find(it.first) == node_map.end()) node_map[it.first] = set<Node>();
 		node_map[it.first].insert(it.second.first);
-		//PROBLEM
+		//PROBLEM-Resolved: we are going to use unordered_maps instead b/c hash pairs might be easier for them
 		//if(cost_map.find(it.first) == node_map.end()) cost_map[it.first] = 
 		//i see problems here as cost_map requires me to compare its key which is a pair with another pair
 		//	I do not have another pair that a can compare, and creating one might not work because of pointers
@@ -81,9 +81,10 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 
 int main(){
 	Graph g;
-	for(int i = 0; i < 26; ++i){
-		//PROBLEM
-		g['a'+i%26] = pair<Node, Info>(rand() % 26+'a',rand() % 26);// there is a problem with the graph implementation because i cant have multiple keys	
+	for(int i = 0; i < 26; ++i){	
+		g['a'+i%26] = pair<Node, Info>(rand() % 26+'a',rand() % 26);
+		//PROBLEM - Resolved: we are going to rely on cost_map and node_map instead of extracting from Graph
+		//// there is a problem with the graph implementation because i cant have multiple keys	
 	}
 	printGraph(g);
 	Node start;
