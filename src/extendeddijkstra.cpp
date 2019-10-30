@@ -32,13 +32,20 @@ void printNodeMap(const unordered_map<Node, set<Node>> & n){
 }
 
 void printInfoMap(const unordered_map<Node, Info> & im){
-	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Priority Queue%%%%%%%%%%%%%%%%%%%%%%" << endl;
+	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Info Map%%%%%%%%%%%%%%%%%%%%%%" << endl;
 	for(auto it : im)
 		cout << it.first << "'s distance: " << it.second << endl;
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
 
 }
 
+void printInfoPQ(const vector<pair<Node, Info>> & pq){
+	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Priority Queue%%%%%%%%%%%%%%%%%%%%%%" << endl;
+	for(auto it : pq)
+		cout << it.first << "'s distance: " << it.second << endl;
+	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
+
+}
 unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 	unordered_map<Node, set<Node>> node_map;
 	//PROBLEM
@@ -52,7 +59,7 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 		//i see problems here as cost_map requires me to compare its key which is a pair with another pair
 		//	I do not have another pair that a can compare, and creating one might not work because of pointers
 	}	
-	printNodeMap(node_map);
+	//printNodeMap(node_map);
 
 	unordered_map<Node, Info> answer_map;
 	unordered_map<Node, Info> info_map;
@@ -62,24 +69,27 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 	info_map[source] = 0;		//set source node distance to 0
 	
 	vector<pair<Node, Info>> info_pq;
+	for(auto it: info_map){
+		info_pq.push_back(make_pair(it.first,it.second));
+	}
 	make_heap (info_pq.begin(), info_pq.end(), [](pair<Node, Info> a, pair<Node, Info> b){ return a.second < b.second;});
-	printInfoMap(info_map);
-	//info_pq : pair(Node, Info)
-	//sorted by smallest distance 
-	//
-	//while info_map not empty:
-	//current = info_pq.pop()
-	//if(current.dist == INFINITY) STOP
-	//for node_map[current.node]:
-	//   min = find smallest distance
-	//info_map.remove(min)
-	//answer_map.insert(min)
-	//
-	//for d in node_map[min.node] :
-	//    if d in answer_map: continue
-	//    if cost_map[pair(min, d)] + min.dist < info_map[d]:
-	//        info_map[d] = cost_map[pair(min, d)] + min.dist
-	//        info_pq.percolate_up(pair(d, info_map[d]))
+	//printInfoMap(info_map);
+	printInfoPQ(info_pq);	
+	
+	while(!info_map.empty()){
+		pair<Node, Info> current = info_pq.pop()
+		if(current.dist == LONG_MAX) break;
+		for (auto el : node_map[current.first]):
+			//min = find smallest distance
+			//info_map.remove(min)
+			//answer_map.insert(min)
+			//
+			//for d in node_map[min.node] :
+			//    if d in answer_map: continue
+			//    if cost_map[pair(min, d)] + min.dist < info_map[d]:
+			//        info_map[d] = cost_map[pair(min, d)] + min.dist
+			//        info_pq.percolate_up(pair(d, info_map[d]))
+	}
 	return answer_map;
 }	
 
@@ -90,7 +100,7 @@ int main(){
 		//PROBLEM - Resolved: we are going to rely on cost_map and node_map instead of extracting from Graph
 		//// there is a problem with the graph implementation because i cant have multiple keys	
 	}
-	printGraph(g);
+	//printGraph(g);
 	Node start = 'a';
 	extendedDijkstra(start, g);
 	return 0;
