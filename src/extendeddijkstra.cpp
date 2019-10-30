@@ -1,5 +1,5 @@
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <utility>
 #include <set>
 #include <iostream>
@@ -9,7 +9,7 @@ using namespace std;
 
 typedef char Node;
 typedef int Info;
-typedef map<Node, pair<Node, Info>> Graph;
+typedef unordered_map<Node, pair<Node, Info>> Graph;
 
 void printGraph(const Graph & g){
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Graph%%%%%%%%%%%%%%%%%%%%%%" << endl;
@@ -18,8 +18,8 @@ void printGraph(const Graph & g){
 	}
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
 }
-void printCostMap(const map<pair<Node,Node>, Info> & c){}
-void printNodeMap(const map<Node, set<Node>> & n){
+void printCostMap(const unordered_map<pair<Node,Node>, Info> & c){}
+void printNodeMap(const unordered_map<Node, set<Node>> & n){
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Node Map%%%%%%%%%%%%%%%%%%%%%%" << endl;
 	for(auto it: n){
 		cout << it.first << "---";
@@ -30,22 +30,36 @@ void printNodeMap(const map<Node, set<Node>> & n){
 
 }
 
-map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
-	map<Node, set<Node>> node_map;
-	map<pair<Node,Node>, Info> cost_map;
+void printInfoMap(const unordered_map<Node, Info> & pq){
+	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Priority Queue%%%%%%%%%%%%%%%%%%%%%%" << endl;
+	for(auto it : pq)
+		cout << it.first << "'s distance: " << it.second << endl;
+	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
+
+}
+unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
+	unordered_map<Node, set<Node>> node_map;
+	unordered_map<pair<Node,Node>, Info> cost_map;
 	for(auto it : graph) { 			//initialize node_map with all the nodes and their reachable edges
 		if (node_map.find(it.first) == node_map.end()) node_map[it.first] = set<Node>();
 		node_map[it.first].insert(it.second.first);
+		//PROBLEM
+		//if(cost_map.find(it.first) == node_map.end()) cost_map[it.first] = 
+		//i see problems here as cost_map requires me to compare its key which is a pair with another pair
+		//	I do not have another pair that a can compare, and creating one might not work because of pointers
 	}	
-	printNodeMap(node_map);	
-	map<Node, Info> answer_map;
-	map<Node, Info> info_map;
+	printNodeMap(node_map);
+
+	unordered_map<Node, Info> answer_map;
+	unordered_map<Node, Info> info_map;
 	for(auto it : node_map){		//initialize info_map with all nodes and with Info to infinity
 		info_map[it.first] = LONG_MAX;
 	}
 	info_map[source] = 0;		//set source node distance to 0
 	
 	vector<pair<Node, Info>> info_pq;
+	make_heap (info_pq.begin(), info_pq.end(), [](pair<Node, Info> a, pair<Node, Info> b){ return a.second < b.second;});
+	printInfoMap(info_map);
 	//info_pq : pair(Node, Info)
 	//sorted by smallest distance 
 	//
@@ -68,6 +82,7 @@ map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 int main(){
 	Graph g;
 	for(int i = 0; i < 26; ++i){
+		//PROBLEM
 		g['a'+i%26] = pair<Node, Info>(rand() % 26+'a',rand() % 26);// there is a problem with the graph implementation because i cant have multiple keys	
 	}
 	printGraph(g);
