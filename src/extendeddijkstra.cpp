@@ -19,7 +19,7 @@ void printGraph(const Graph & g){
 	}
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
 }
-void printCostMap(const map<pair<Node,Node>, Info> & c){}
+
 void printNodeMap(const unordered_map<Node, set<Node>> & n){
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Node Map%%%%%%%%%%%%%%%%%%%%%%" << endl;
 	for(auto it: n){
@@ -50,17 +50,17 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 	unordered_map<Node, set<Node>> node_map;
 	//PROBLEM
 	//we cant have pairs as key's for unordered maps	
-	map<pair<Node,Node>, Info> cost_map;
+	Graph cost_map;
 	for(auto it : graph) { 			//initialize node_map with all the nodes and their reachable edges
 		if (node_map.find(it.first) == node_map.end()) node_map[it.first] = set<Node>();
 		node_map[it.first].insert(it.second.first);
 		//PROBLEM-Resolved: we are going to use unordered_maps instead b/c hash pairs might be easier for them
-		//if(cost_map.find(it.first) == node_map.end()) cost_map[it.first] = 
+		if(cost_map.find(it.first) == cost_map.end()) cost_map[it.first] = make_pair(it.second.first,it.second.second);
 		//i see problems here as cost_map requires me to compare its key which is a pair with another pair
 		//	I do not have another pair that a can compare, and creating one might not work because of pointers
 	}	
-	//printNodeMap(node_map);
-
+	printNodeMap(node_map);
+	printGraph(cost_map);
 	unordered_map<Node, Info> answer_map;
 	unordered_map<Node, Info> info_map;
 	for(auto it : node_map){		//initialize info_map with all nodes and with Info to infinity
@@ -86,10 +86,11 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 
 		for (auto d : node_map[min.first]){
 			if(answer_map.find(d) != answer_map.end()) continue;
-			//if(cost_map[pair(min.first, d)] + min.second < info_map[d]){
-			//	info_map[d] = cost_map[pair(min, d)] + min.dist;
-			//        info_pq.percolate_up(pair(d, info_map[d]))
-			//}
+			if(cost_map[min.first].second + min.second < info_map[d]){
+				info_map[d] = cost_map[d].second + min.second;
+			        //info_pq
+				make_heap (info_pq.begin(), info_pq.end(), [](pair<Node, Info> a, pair<Node, Info> b){ return a.second > b.second;}); 	
+			}
 		}
 	}
 	return answer_map;
