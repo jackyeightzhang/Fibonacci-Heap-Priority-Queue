@@ -9,7 +9,7 @@
 
 using namespace std;
 
-typedef char				Node;
+typedef char			Node;
 typedef unsigned long		Info;
 typedef pair<Node, Node>	Edge;
 
@@ -19,13 +19,16 @@ struct pairHasher {
 	}
 };
 
-typedef unordered_set<Node>						NodeSet;
+typedef unordered_set<Node>				NodeSet;
 typedef unordered_map<Node, NodeSet>			NodeMap;
-typedef pair<Node, Info>						InfoPair;
-typedef unordered_map<Node, Info>				InfoMap;
-typedef vector<InfoPair>						InfoPQ;
-typedef unordered_map<Edge, Info, pairHasher>	CostMap;
+typedef pair<Node, Info>				InfoPair;
+typedef unordered_map<Node, Info>			InfoMap;
+typedef vector<InfoPair>				InfoPQ;
+typedef unordered_map<Edge, Info, pairHasher>		CostMap;
 
+bool heapComp(const InfoPair& a, const InfoPair& b) {
+	return a.second < b.second;
+}
 
 void debugPrint(const NodeMap& nodeMap) {
 	for(const auto& nodePair: nodeMap) {
@@ -72,13 +75,13 @@ InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostM
 
 	// Initialize a min-heap for all values in distMap
 	InfoPQ distPQ(distMap.begin(), distMap.end());
-	// @TODO Define comparison function somewhere else to avoid redefining it
-	make_heap(distPQ.begin(), distPQ.end(), [](const InfoPair& a, const InfoPair& b) {return a.second < b.second;}); 
+	// Heapify's vector
+	make_heap(distPQ.begin(), distPQ.end(), heapComp); 
 	
 	while(!distMap.empty()) {
 		// Extract min value from distPQ
 		InfoPair min = distPQ[0];
-		pop_heap(distPQ.begin(), distPQ.end(), [](const InfoPair& a, const InfoPair& b) {return a.second < b.second;});
+		pop_heap(distPQ.begin(), distPQ.end(), heapComp);
 		distPQ.pop_back();
 
 		// Terminate if min distance is Infinity
@@ -92,8 +95,8 @@ InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostM
 			if(minDistMap.count(adjacentNode)) continue;
 			if(costMap.at(Edge(min.first, adjacentNode)) + min.second < distMap[adjacentNode]) {
 				distMap[adjacentNode] = costMap.at(Edge(min.first, adjacentNode)) + min.second;
-				// @TODO replace this with heapify functtion
-				make_heap(distPQ.begin(), distPQ.end(), [](const InfoPair& a, const InfoPair& b) {return a.second < b.second;});
+				// @TODO replace this with percolate functtion
+				make_heap(distPQ.begin(), distPQ.end(), heapComp);
 			}
 		}
 	}
