@@ -72,23 +72,25 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 	for(auto it: info_map){
 		info_pq.push_back(make_pair(it.first,it.second));
 	}
-	make_heap (info_pq.begin(), info_pq.end(), [](pair<Node, Info> a, pair<Node, Info> b){ return a.second < b.second;});
+	make_heap (info_pq.begin(), info_pq.end(), [](pair<Node, Info> a, pair<Node, Info> b){ return a.second > b.second;}); 
+	//because the only way to pop is to to remove the last element, i need to reverse the priority  
 	//printInfoMap(info_map);
-	printInfoPQ(info_pq);	
+	//printInfoPQ(info_pq);	
 	
 	while(!info_map.empty()){
-		pair<Node, Info> current = info_pq.pop()
-		if(current.dist == LONG_MAX) break;
-		for (auto el : node_map[current.first]):
-			//min = find smallest distance
-			//info_map.remove(min)
-			//answer_map.insert(min)
-			//
-			//for d in node_map[min.node] :
-			//    if d in answer_map: continue
-			//    if cost_map[pair(min, d)] + min.dist < info_map[d]:
-			//        info_map[d] = cost_map[pair(min, d)] + min.dist
+		pair<Node, Info> min = info_pq[info_pq.size()-1]; //pop back does not return the value removed
+		info_pq.pop_back();
+		if(min.second == LONG_MAX) break;	
+		info_map.erase(min.first);
+		answer_map[min.first] = min.second;
+
+		for (auto d : node_map[min.first]){
+			if(answer_map.find(d) != answer_map.end()) continue;
+			//if(cost_map[pair(min.first, d)] + min.second < info_map[d]){
+			//	info_map[d] = cost_map[pair(min, d)] + min.dist;
 			//        info_pq.percolate_up(pair(d, info_map[d]))
+			//}
+		}
 	}
 	return answer_map;
 }	
