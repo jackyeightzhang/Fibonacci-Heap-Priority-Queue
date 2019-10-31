@@ -6,10 +6,11 @@
 #include <limits.h>
 #include <algorithm>
 #include <map>
+#include <functional>
 using namespace std;
 
 typedef char Node;
-typedef int Info;
+typedef unsigned long Info;
 typedef unordered_map<Node, pair<Node, Info>> Graph;
 
 void printGraph(const Graph & g){
@@ -53,25 +54,28 @@ void printAnswerMap(const unordered_map<Node, Info> & am){
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
 
 }
+
+size_t pairHash(const pair<Node, Node>& key) {return hash<Node>()(key.first) ^ hash<Node>()(key.second);}
+
 unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 	unordered_map<Node, set<Node>> node_map;
 	//PROBLEM
 	//we cant have pairs as key's for unordered maps	
-	unordered_map<pair<Node, Node>, Info> cost_map;
-	for(auto it : graph) { 			//initialize node_map with all the nodes and their reachable edges
+	unordered_map<pair<Node, Node>, Info, decltype(&pairHash)> cost_map;
+	/*for(auto it : graph) { 			//initialize node_map with all the nodes and their reachable edges
 		if (node_map.find(it.first) == node_map.end()) node_map[it.first] = set<Node>();
 		node_map[it.first].insert(it.second.first);
 		//PROBLEM-Resolved: we are going to use unordered_maps instead b/c hash pairs might be easier for them
 		if(cost_map.find(it.first) == cost_map.end()) cost_map[it.first] = make_pair(it.second.first,it.second.second);
 		//i see problems here as cost_map requires me to compare its key which is a pair with another pair
 		//	I do not have another pair that a can compare, and creating one might not work because of pointers
-	}	
+	}*/	
 	printNodeMap(node_map);
 //	printGraph(cost_map);
 	unordered_map<Node, Info> answer_map;
 	unordered_map<Node, Info> info_map;
 	for(auto it : node_map){		//initialize info_map with all nodes and with Info to infinity
-		info_map[it.first] = LONG_MAX;
+		info_map[it.first] = ULONG_MAX;
 	}
 	info_map[source] = 0;		//set source node distance to 0
 	
@@ -87,7 +91,7 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 	while(!info_map.empty()){
 		pair<Node, Info> min = info_pq[info_pq.size()-1]; //pop back does not return the value removed
 		info_pq.pop_back();
-		if(min.second == LONG_MAX) break;	
+		if(min.second == ULONG_MAX) break;	
 		info_map.erase(min.first);
 		answer_map[min.first] = min.second;
 
