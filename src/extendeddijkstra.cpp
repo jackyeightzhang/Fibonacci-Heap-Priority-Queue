@@ -46,6 +46,13 @@ void printInfoPQ(const vector<pair<Node, Info>> & pq){
 	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
 
 }
+
+void printAnswerMap(const unordered_map<Node, Info> & am){
+	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Priority Queue%%%%%%%%%%%%%%%%%%%%%%" << endl;
+	for(auto it : am) cout << it.first << "'s distance: " << it.second << endl;
+	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
+
+}
 unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 	unordered_map<Node, set<Node>> node_map;
 	//PROBLEM
@@ -88,7 +95,7 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 			if(answer_map.find(d) != answer_map.end()) continue;
 			if(cost_map[min.first].second + min.second < info_map[d]){
 				info_map[d] = cost_map[d].second + min.second;
-			        //info_pq
+			        info_pq.
 				make_heap (info_pq.begin(), info_pq.end(), [](pair<Node, Info> a, pair<Node, Info> b){ return a.second > b.second;}); 	
 			}
 		}
@@ -105,6 +112,6 @@ int main(){
 	}
 	//printGraph(g);
 	Node start = 'a';
-	extendedDijkstra(start, g);
+	printAnswerMap(extendedDijkstra(start, g));
 	return 0;
 }
