@@ -55,13 +55,17 @@ void printAnswerMap(const unordered_map<Node, Info> & am){
 
 }
 
-size_t pairHash(const pair<Node, Node>& key) {return hash<Node>()(key.first) ^ hash<Node>()(key.second);}
+struct pairHasher {
+	 size_t operator()(const pair<Node, Node>& key) const {
+			 return hash<Node>()(key.first) ^ hash<Node>()(key.second);
+	 }
+};
 
 unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 	unordered_map<Node, set<Node>> node_map;
 	//PROBLEM
 	//we cant have pairs as key's for unordered maps	
-	unordered_map<pair<Node, Node>, Info, decltype(&pairHash)> cost_map;
+	unordered_map<pair<Node, Node>, Info, pairHasher> cost_map;
 	/*for(auto it : graph) { 			//initialize node_map with all the nodes and their reachable edges
 		if (node_map.find(it.first) == node_map.end()) node_map[it.first] = set<Node>();
 		node_map[it.first].insert(it.second.first);
