@@ -1,125 +1,114 @@
-#include <vector>
-#include <unordered_map>
-#include <utility>
-#include <set>
+#include <algorithm>
+#include <functional>
 #include <iostream>
 #include <limits.h>
-#include <algorithm>
-#include <map>
-#include <functional>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
+
 using namespace std;
 
-typedef char Node;
-typedef unsigned long Info;
-typedef unordered_map<Node, pair<Node, Info>> Graph;
-
-void printGraph(const Graph & g){
-	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Graph%%%%%%%%%%%%%%%%%%%%%%" << endl;
-	for(auto it: g){
-		cout << it.first << "->" << it.second.first << "(" << it.second.second << ")" << endl;
-	}
-	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
-}
-
-void printNodeMap(const unordered_map<Node, set<Node>> & n){
-	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Node Map%%%%%%%%%%%%%%%%%%%%%%" << endl;
-	for(auto it: n){
-		cout << it.first << "---";
-		for(auto el : it.second) cout << el << ",";
-		cout << endl;
-	}
-	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
-
-}
-
-void printInfoMap(const unordered_map<Node, Info> & im){
-	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Info Map%%%%%%%%%%%%%%%%%%%%%%" << endl;
-	for(auto it : im)
-		cout << it.first << "'s distance: " << it.second << endl;
-	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
-
-}
-
-void printInfoPQ(const vector<pair<Node, Info>> & pq){
-	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Priority Queue%%%%%%%%%%%%%%%%%%%%%%" << endl;
-	for(auto it : pq)
-		cout << it.first << "'s distance: " << it.second << endl;
-	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
-
-}
-
-void printAnswerMap(const unordered_map<Node, Info> & am){
-	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Priority Queue%%%%%%%%%%%%%%%%%%%%%%" << endl;
-	for(auto it : am) cout << it.first << "'s distance: " << it.second << endl;
-	cout << "%%%%%%%%%%%%%%%%%%%%%Printing Complete%%%%%%%%%%%%%%%%%%%%%%" << endl;
-
-}
+typedef char				Node;
+typedef unsigned long		Info;
+typedef pair<Node, Node>	Edge;
 
 struct pairHasher {
-	 size_t operator()(const pair<Node, Node>& key) const {
-			 return hash<Node>()(key.first) ^ hash<Node>()(key.second);
-	 }
+	size_t operator()(const Edge& key) const {
+		return hash<Node>()(key.first) ^ hash<Node>()(key.second);
+	}
 };
 
-unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
-	unordered_map<Node, set<Node>> node_map;
-	//PROBLEM
-	//we cant have pairs as key's for unordered maps	
-	unordered_map<pair<Node, Node>, Info, pairHasher> cost_map;
-	/*for(auto it : graph) { 			//initialize node_map with all the nodes and their reachable edges
-		if (node_map.find(it.first) == node_map.end()) node_map[it.first] = set<Node>();
-		node_map[it.first].insert(it.second.first);
-		//PROBLEM-Resolved: we are going to use unordered_maps instead b/c hash pairs might be easier for them
-		if(cost_map.find(it.first) == cost_map.end()) cost_map[it.first] = make_pair(it.second.first,it.second.second);
-		//i see problems here as cost_map requires me to compare its key which is a pair with another pair
-		//	I do not have another pair that a can compare, and creating one might not work because of pointers
-	}*/	
-	printNodeMap(node_map);
-//	printGraph(cost_map);
-	unordered_map<Node, Info> answer_map;
-	unordered_map<Node, Info> info_map;
-	for(auto it : node_map){		//initialize info_map with all nodes and with Info to infinity
-		info_map[it.first] = ULONG_MAX;
-	}
-	info_map[source] = 0;		//set source node distance to 0
-	
-	vector<pair<Node, Info>> info_pq;
-	for(auto it: info_map){
-		info_pq.push_back(make_pair(it.first,it.second));
-	}
-	make_heap (info_pq.begin(), info_pq.end(), [](pair<Node, Info> a, pair<Node, Info> b){ return a.second > b.second;}); 
-	//because the only way to pop is to to remove the last element, i need to reverse the priority  
-	//printInfoMap(info_map);
-	//printInfoPQ(info_pq);	
-	
-	while(!info_map.empty()){
-		pair<Node, Info> min = info_pq[info_pq.size()-1]; //pop back does not return the value removed
-		info_pq.pop_back();
-		if(min.second == ULONG_MAX) break;	
-		info_map.erase(min.first);
-		answer_map[min.first] = min.second;
+typedef unordered_set<Node>						NodeSet;
+typedef unordered_map<Node, NodeSet>			NodeMap;
+typedef pair<Node, Info>						InfoPair;
+typedef unordered_map<Node, Info>				InfoMap;
+typedef vector<InfoPair>						InfoPQ;
+typedef unordered_map<Edge, Info, pairHasher>	CostMap;
 
-		for (auto d : node_map[min.first]){
-			if(answer_map.find(d) != answer_map.end()) continue;
-			if(cost_map[pair<Node, Node>(min.first, d)] + min.second < info_map[d]){
-				info_map[d] = cost_map[pair<Node, Node>(min.first, d)] + min.second;
-//			        info_pq.
-				make_heap (info_pq.begin(), info_pq.end(), [](pair<Node, Info> a, pair<Node, Info> b){ return a.second > b.second;}); 	
+
+void debugPrint(const NodeMap& nodeMap) {
+	for(const auto& nodePair: nodeMap) {
+		cout << nodePair.first << ": ";
+		for(const auto& node : nodePair.second) {
+			cout << node << ", ";
+		}
+		cout << endl;
+	}
+}
+
+void debugPrint(const InfoMap& infoMap) {
+	for(const auto& infoPair : infoMap) {
+		cout << infoPair.first << ": " << infoPair.second << endl;
+	}
+}
+
+void debugPrint(const InfoPQ& infoPQ) {
+	for(const auto& infoPair : infoPQ) {
+		cout << infoPair.first << ": " << infoPair.second << endl;
+	}
+}
+
+void debugPrint(const CostMap& costMap) {
+	for(const auto& costPair : costMap) {
+		cout << costPair.first.first << "-" << costPair.first.second << ": " << costPair.second << endl;
+	}
+}
+
+
+InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostMap& costMap) {
+	debugPrint(nodeMap);
+	debugPrint(costMap);
+
+	InfoMap distMap;
+	InfoMap minDistMap;
+
+	// Initialize distMap with all node distances set to Infinity
+	for(const auto& nodePair : nodeMap) {
+		distMap[nodePair.first] = ULONG_MAX;
+	}
+	// Set source node distance to 0
+	distMap[source] = 0;
+
+	// Initialize a min-heap for all values in distMap
+	InfoPQ distPQ(distMap.begin(), distMap.end());
+	// @TODO Define comparison function somewhere else to avoid redefining it
+	make_heap(distPQ.begin(), distPQ.end(), [](const InfoPair& a, const InfoPair& b) {return a.second < b.second;}); 
+	
+	while(!distMap.empty()) {
+		// Extract min value from distPQ
+		InfoPair min = distPQ[0];
+		pop_heap(distPQ.begin(), distPQ.end(), [](const InfoPair& a, const InfoPair& b) {return a.second < b.second;});
+		distPQ.pop_back();
+
+		// Terminate if min distance is Infinity
+		if(min.second == ULONG_MAX) break;
+
+		// Remove min from distMap, add to minDistMap
+		distMap.erase(min.first);
+		minDistMap[min.first] = min.second;
+
+		for (const auto& adjacentNode : nodeMap.at(min.first)) {
+			if(minDistMap.count(adjacentNode)) continue;
+			if(costMap.at(Edge(min.first, adjacentNode)) + min.second < distMap[adjacentNode]) {
+				distMap[adjacentNode] = costMap.at(Edge(min.first, adjacentNode)) + min.second;
+				// @TODO replace this with heapify functtion
+				make_heap(distPQ.begin(), distPQ.end(), [](const InfoPair& a, const InfoPair& b) {return a.second < b.second;});
 			}
 		}
 	}
-	return answer_map;
+	return minDistMap;
 }	
 
-int main(){
-	Graph g;
-	for(int i = 0; i < 26; ++i){	
+int main() {
+	// @TODO generate NodeMap and CostMap randomly
+
+	/*for(int i = 0; i < 26; ++i) {
 		g['a'+i] = pair<Node, Info>(rand() % 26+'a',rand() % 26);
-		//PROBLEM - Resolved: we are going to rely on cost_map and node_map instead of extracting from Graph
-		//// there is a problem with the graph implementation because i cant have multiple keys	
-	}
-	//printGraph(g);
+	}*/
+
+	
 	Node start = 'a';
-	printAnswerMap(extendedDijkstra(start, g));
+	//debugPrint(extendedDijkstra(start, ));
 	return 0;
 }
