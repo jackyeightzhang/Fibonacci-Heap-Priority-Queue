@@ -57,7 +57,7 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 	unordered_map<Node, set<Node>> node_map;
 	//PROBLEM
 	//we cant have pairs as key's for unordered maps	
-	Graph cost_map;
+	unordered_map<pair<Node, Node>, Info> cost_map;
 	for(auto it : graph) { 			//initialize node_map with all the nodes and their reachable edges
 		if (node_map.find(it.first) == node_map.end()) node_map[it.first] = set<Node>();
 		node_map[it.first].insert(it.second.first);
@@ -67,7 +67,7 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 		//	I do not have another pair that a can compare, and creating one might not work because of pointers
 	}	
 	printNodeMap(node_map);
-	printGraph(cost_map);
+//	printGraph(cost_map);
 	unordered_map<Node, Info> answer_map;
 	unordered_map<Node, Info> info_map;
 	for(auto it : node_map){		//initialize info_map with all nodes and with Info to infinity
@@ -93,9 +93,9 @@ unordered_map<Node, Info>  extendedDijkstra( Node source, Graph graph ){
 
 		for (auto d : node_map[min.first]){
 			if(answer_map.find(d) != answer_map.end()) continue;
-			if(cost_map[min.first].second + min.second < info_map[d]){
-				info_map[d] = cost_map[d].second + min.second;
-			        info_pq.
+			if(cost_map[pair<Node, Node>(min.first, d)] + min.second < info_map[d]){
+				info_map[d] = cost_map[pair<Node, Node>(min.first, d)] + min.second;
+//			        info_pq.
 				make_heap (info_pq.begin(), info_pq.end(), [](pair<Node, Info> a, pair<Node, Info> b){ return a.second > b.second;}); 	
 			}
 		}

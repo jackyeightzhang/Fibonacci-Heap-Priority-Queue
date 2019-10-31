@@ -1,4 +1,4 @@
-CXX		:= g++
+CXX			:= g++
 CXXFLAGS	:= -std=c++11 -ggdb
 
 INC_PATH	:= -Iinclude/
