@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include <chrono>
 
 using namespace std;
 
@@ -98,6 +99,7 @@ InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostM
 	while(!distMap.empty()) {
 		// Extract min value from distPQ
 		InfoPair min = distPQ[0];
+		// @TODO we need to update all the indexes in index Map after this operation
 		pop_heap(distPQ.begin(), distPQ.end(), heapComp);
 		distPQ.pop_back();
 
@@ -121,14 +123,19 @@ InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostM
 }	
 
 int main() {
+	auto startTime = chrono::high_resolution::now();
+
 	// @TODO generate NodeMap and CostMap randomly
 
 	/*for(int i = 0; i < 26; ++i) {
 		g['a'+i] = pair<Node, Info>(rand() % 26+'a',rand() % 26);
 	}*/
-
-	
 	Node start = 'a';
 	//debugPrint(extendedDijkstra(start, ));
+
+	auto endTime = chrono::high_resolution::now();
+	auto extendedDijkstraTiming = chrono::duration_cast<chrono::microseconds>(endTime - startTime).count();
+	cout << extendedDijkstraTiming << endl;
+
 	return 0;
 }
