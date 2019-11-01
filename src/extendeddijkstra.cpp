@@ -25,6 +25,7 @@ typedef pair<Node, Info>				InfoPair;
 typedef unordered_map<Node, Info>			InfoMap;
 typedef vector<InfoPair>				InfoPQ;
 typedef unordered_map<Edge, Info, pairHasher>		CostMap;
+typedef unordered_map<Node, int>			IndexMap;
 
 bool heapComp(const InfoPair& a, const InfoPair& b) {
 	return a.second < b.second;
@@ -58,6 +59,16 @@ void debugPrint(const CostMap& costMap) {
 	}
 }
 
+void percolateUp(InfoPQ& infoPQ, HeapMap& indexMap, Node node) {
+	int current = indexMap[node];
+	int parent = (it - 1) / 2;
+	while(current && infoPQ[parent].second > infoPQ[current].second) {
+		swap(infoPQ[current], infoPQ[parent]);
+		swap(indexMap[infoPQ[current].first], indexMap[infoPQ[parent].first])
+		current = parent;
+		parent = (it - 1) / 2;
+	}	
+}
 
 InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostMap& costMap) {
 	debugPrint(nodeMap);
@@ -66,6 +77,8 @@ InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostM
 	InfoMap distMap;
 	InfoMap minDistMap;
 
+	IndexMap indexMap;
+	
 	// Initialize distMap with all node distances set to Infinity
 	for(const auto& nodePair : nodeMap) {
 		distMap[nodePair.first] = ULONG_MAX;
@@ -78,6 +91,10 @@ InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostM
 	// Heapify's vector
 	make_heap(distPQ.begin(), distPQ.end(), heapComp); 
 	
+	for(int i = 0; i < distPQ.size(); ++i) {
+		indexMap[distPQ[i].first] = i;
+	}
+
 	while(!distMap.empty()) {
 		// Extract min value from distPQ
 		InfoPair min = distPQ[0];
@@ -95,8 +112,8 @@ InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostM
 			if(minDistMap.count(adjacentNode)) continue;
 			if(costMap.at(Edge(min.first, adjacentNode)) + min.second < distMap[adjacentNode]) {
 				distMap[adjacentNode] = costMap.at(Edge(min.first, adjacentNode)) + min.second;
-				// @TODO replace this with percolate functtion
-				make_heap(distPQ.begin(), distPQ.end(), heapComp);
+				distPQ[indexMap[adjacentNode]] = costMap.at(Edge(min.first, adjacentNode)) + min.second;
+				percolateUp(distPQ, indexMap, adjacentNode);
 			}
 		}
 	}
