@@ -26,7 +26,6 @@ typedef pair<Node, Info>				InfoPair;
 typedef unordered_map<Node, Info>			InfoMap;
 typedef vector<InfoPair>				InfoPQ;
 typedef unordered_map<Edge, Info, pairHasher>		CostMap;
-typedef unordered_map<Node, int>			IndexMap;
 
 bool heapComp(const InfoPair& a, const InfoPair& b) {
 	return a.second < b.second;
@@ -60,25 +59,12 @@ void debugPrint(const CostMap& costMap) {
 	}
 }
 
-void percolateUp(InfoPQ& infoPQ, HeapMap& indexMap, Node node) {
-	int current = indexMap[node];
-	int parent = (it - 1) / 2;
-	while(current && infoPQ[parent].second > infoPQ[current].second) {
-		swap(infoPQ[current], infoPQ[parent]);
-		swap(indexMap[infoPQ[current].first], indexMap[infoPQ[parent].first])
-		current = parent;
-		parent = (it - 1) / 2;
-	}	
-}
-
 InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostMap& costMap) {
 	debugPrint(nodeMap);
 	debugPrint(costMap);
 
 	InfoMap distMap;
 	InfoMap minDistMap;
-
-	IndexMap indexMap;
 	
 	// Initialize distMap with all node distances set to Infinity
 	for(const auto& nodePair : nodeMap) {
@@ -91,10 +77,6 @@ InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostM
 	InfoPQ distPQ(distMap.begin(), distMap.end());
 	// Heapify's vector
 	make_heap(distPQ.begin(), distPQ.end(), heapComp); 
-	
-	for(int i = 0; i < distPQ.size(); ++i) {
-		indexMap[distPQ[i].first] = i;
-	}
 
 	while(!distMap.empty()) {
 		// Extract min value from distPQ
@@ -102,20 +84,28 @@ InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostM
 		// @TODO we need to update all the indexes in index Map after this operation
 		pop_heap(distPQ.begin(), distPQ.end(), heapComp);
 		distPQ.pop_back();
+		
+		
+		while (minDistMap.count(min.first)) {
+			min = distPQ[0];
+			pop_heap(distPQ.begin(), distPQ.end(), heapComp);
+			distPQ.pop_back();
+		}
 
 		// Terminate if min distance is Infinity
-		if(min.second == ULONG_MAX) break;
+		if(min.second == ULONG_MAX) return minDistMap;
 
 		// Remove min from distMap, add to minDistMap
 		distMap.erase(min.first);
 		minDistMap[min.first] = min.second;
 
+		Info newDistance;
 		for (const auto& adjacentNode : nodeMap.at(min.first)) {
-			if(minDistMap.count(adjacentNode)) continue;
-			if(costMap.at(Edge(min.first, adjacentNode)) + min.second < distMap[adjacentNode]) {
-				distMap[adjacentNode] = costMap.at(Edge(min.first, adjacentNode)) + min.second;
-				distPQ[indexMap[adjacentNode]] = costMap.at(Edge(min.first, adjacentNode)) + min.second;
-				percolateUp(distPQ, indexMap, adjacentNode);
+			newDistance = costMap.at(Edge(min.first, adjacentNode)) + min.second;
+			if(minDistMap.count(adjacentNode) && newDistance < distMap[adjacentNode]) {
+				distMap[adjacentNode] = newDistance; 
+				distPQ.push_back(InfoPair(adjacentNode, newDistance));
+				push_heap(distPQ.begin(), distPQ.end());
 			}
 		}
 	}
@@ -123,7 +113,7 @@ InfoMap extendedDijkstra(const Node& source, const NodeMap& nodeMap, const CostM
 }	
 
 int main() {
-	auto startTime = chrono::high_resolution::now();
+	auto startTime = chrono::high_resolution_clock::now();
 
 	// @TODO generate NodeMap and CostMap randomly
 
@@ -133,7 +123,7 @@ int main() {
 	Node start = 'a';
 	//debugPrint(extendedDijkstra(start, ));
 
-	auto endTime = chrono::high_resolution::now();
+	auto endTime = chrono::high_resolution_clock::now();
 	auto extendedDijkstraTiming = chrono::duration_cast<chrono::microseconds>(endTime - startTime).count();
 	cout << extendedDijkstraTiming << endl;
 
