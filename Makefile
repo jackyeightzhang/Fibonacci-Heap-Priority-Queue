@@ -1,27 +1,24 @@
-CXX		:= g++
+CXX			:= g++
 CXXFLAGS	:= -std=c++11 -ggdb
 
 INC_PATH	:= -Iinclude/
 LIB_PATH	:= -Llib/
-LFLAGS		:= -lgtest_main -lgtest -lpthread
+LFLAGS		:= -lcourselib -lgtest_main -lgtest -lpthread
 
-all: gtest sandbox
+all: dijkstra driver gtest
 
-sandbox:
-	$(CXX) $(CXXFLAGS) $(INC_PATH) src/Sandbox.cpp $(LIB_PATH) $(LFLAGS) -o bin/sandbox
-
+dijkstra:
+	$(CXX) $(CXXFLAGS) $(INC_PATH) src/dijkstra.cpp $(LIB_PATH) $(LFLAGS) -o bin/dijkstra
+driver:
+	$(CXX) $(CXXFLAGS) $(INC_PATH) src/driver_graph.cpp $(LIB_PATH) $(LFLAGS) -o bin/driver
 gtest:
-	$(CXX) $(CXXFLAGS) $(INC_PATH) src/UnitTest.cpp $(LIB_PATH) $(LFLAGS) -o bin/gtest
+	$(CXX) $(CXXFLAGS) $(INC_PATH) src/test_graph.cpp $(LIB_PATH) $(LFLAGS) -o bin/gtest
 
-program:
-	$(CXX) $(CXXFLAGS) $(INC_PATH) src/extendeddijkstra.cpp -o bin/program
 
-run_program:
-	./bin/program
-
-run_sandbox:
-	./bin/sandbox
-
+run_dijkstra:
+	./bin/dijkstra
+run_driver:
+	./bin/driver
 run_gtest:
 	./bin/gtest
 
