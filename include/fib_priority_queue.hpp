@@ -8,7 +8,7 @@
 #include "courselib/ics_exceptions.hpp"
 #include <utility>							//For std::swap function
 #include "array_stack.hpp"			//See operator <<
-
+#include "array_set.hpp"
 
 namespace ics {
 
@@ -101,30 +101,25 @@ template<class T, bool (*tgt)(const T& a, const T& b) = nullptr> class FibPriori
 	private:
 		class FN {	
 	    	public:
-	    	    FN()				: parentNode(nullptr){}
-				FN(const FN& fn)	: childNodes(ArraySet<FN*>(fn.childNodes)), parentNode(fn.parentNode), value(fn.value){}
-				FN(ArraySet<FN*> cn, 
-					FN* pn = nullptr, 
-					T v) 			: childNodes(cn), parentNode(pn), value(v){}
+	    	    FN() 								: parentNode(nullptr){}
+				FN(const FN& fn)					: childNodes(fn.childNodes), parentNode(fn.parentNode), value(fn.value){}
+				FN(ArraySet<FN*> cn, FN* pn, T v)	: childNodes(cn), parentNode(pn), value(v){}
 
 				ArraySet<FN*> childNodes;
 	    		FN* parentNode;
 	    		T value;
 		};
 
-		class FRN {
+		class FRN : FN {
 	    	public:
-	    	    FRN()				: prevRootNode(this), nextRootNode(this){} 
-				FRN(const FRN& frn)	: childNodes(ArraySet<FN*>(frn.childNodes)), prevRootNode(frn.prevRootNode), nextRootNode(frn.nextRootNode), value(frn.value){}
-				FN(ArraySet<FN*> cn, 
-					FRN* prn = this, 
-					FRN* nrn = this,
-					T v) 			: childNodes(cn), prevRootNode(prn), nextRootNode(nrn), value(v){}
+	    	    FRN() { prevRootNode = this; nextRootNode = this; } 
+				FRN(const FRN& frn)	
+					: prevRootNode(frn.prevRootNode), nextRootNode(frn.nextRootNode){}
+				FRN(ArraySet<FN*> cn, FN* pn, T v, FRN* prn = nullptr, FRN* nrn = nullptr) 			
+					: FN(cn,pn,v), prevRootNode(prn), nextRootNode(nrn){}
 
-				ArraySet<FN*> childNodes;
 	    		FRN* prevRootNode;
 				FRN* nextRootNode;
-	    		T value;
 		};
 
 		bool (*gt) (const T& a, const T& b); // The gt used by enqueue (from template or constructor)
