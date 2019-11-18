@@ -1,5 +1,5 @@
 # Vim
-.swp
+*.swp
 
 # Directories
 bin/*
