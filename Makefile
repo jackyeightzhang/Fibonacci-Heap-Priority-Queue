@@ -12,7 +12,7 @@ dijkstra:
 driver:
 	$(CXX) $(CXXFLAGS) $(INC_PATH) src/driver_graph.cpp $(LIB_PATH) $(LFLAGS) -o bin/driver
 gtest:
-	$(CXX) $(CXXFLAGS) $(INC_PATH) src/test_graph.cpp $(LIB_PATH) $(LFLAGS) -o bin/gtest
+	$(CXX) $(CXXFLAGS) $(INC_PATH) src/test_priority_queue.cpp $(LIB_PATH) $(LFLAGS) -o bin/gtest
 
 
 run_dijkstra:
