@@ -1,5 +1,5 @@
-#ifndef HEAP_PRIORITY_QUEUE_HPP_
-#define HEAP_PRIORITY_QUEUE_HPP_
+#ifndef FIB_PRIORITY_QUEUE_HPP_
+#define FIB_PRIORITY_QUEUE_HPP_
 
 #include <string>
 #include <iostream>
@@ -18,19 +18,19 @@ namespace ics {
 //If both tgt and cgt are supplied, then they must be the same (by ==) function.
 //If neither is supplied, or both are supplied but different, TemplateFunctionError is raised.
 //The (unique) non-nullptr value supplied by tgt/cgt is stored in the instance variable gt.
-template<class T, bool (*tgt)(const T& a, const T& b) = nullptr> class HeapPriorityQueue {
+template<class T, bool (*tgt)(const T& a, const T& b) = nullptr> class FibPriorityQueue {
   public:
     //Destructor/Constructors
-    ~HeapPriorityQueue();
+    ~FibPriorityQueue();
 
-    HeapPriorityQueue(bool (*cgt)(const T& a, const T& b) = nullptr);
-    explicit HeapPriorityQueue(int initial_length, bool (*cgt)(const T& a, const T& b));
-    HeapPriorityQueue(const HeapPriorityQueue<T,tgt>& to_copy, bool (*cgt)(const T& a, const T& b) = nullptr);
-    explicit HeapPriorityQueue(const std::initializer_list<T>& il, bool (*cgt)(const T& a, const T& b) = nullptr);
+    FibPriorityQueue(bool (*cgt)(const T& a, const T& b) = nullptr);
+    explicit FibPriorityQueue(int initial_length, bool (*cgt)(const T& a, const T& b));
+    FibPriorityQueue(const FibPriorityQueue<T,tgt>& to_copy, bool (*cgt)(const T& a, const T& b) = nullptr);
+    explicit FibPriorityQueue(const std::initializer_list<T>& il, bool (*cgt)(const T& a, const T& b) = nullptr);
 
     //Iterable class must support "for-each" loop: .begin()/.end() and prefix ++ on returned result
     template <class Iterable>
-    explicit HeapPriorityQueue (const Iterable& i, bool (*cgt)(const T& a, const T& b) = nullptr);
+    explicit FibPriorityQueue (const Iterable& i, bool (*cgt)(const T& a, const T& b) = nullptr);
 
 
     //Queries
@@ -51,46 +51,46 @@ template<class T, bool (*tgt)(const T& a, const T& b) = nullptr> class HeapPrior
 
 
     //Operators
-    HeapPriorityQueue<T,tgt>& operator = (const HeapPriorityQueue<T,tgt>& rhs);
-    bool operator == (const HeapPriorityQueue<T,tgt>& rhs) const;
-    bool operator != (const HeapPriorityQueue<T,tgt>& rhs) const;
+    FibPriorityQueue<T,tgt>& operator = (const FibPriorityQueue<T,tgt>& rhs);
+    bool operator == (const FibPriorityQueue<T,tgt>& rhs) const;
+    bool operator != (const FibPriorityQueue<T,tgt>& rhs) const;
 
     template<class T2, bool (*gt2)(const T2& a, const T2& b)>
-    friend std::ostream& operator << (std::ostream& outs, const HeapPriorityQueue<T2,gt2>& pq);
+    friend std::ostream& operator << (std::ostream& outs, const FibPriorityQueue<T2,gt2>& pq);
 
 
 
     class Iterator {
       public:
-        //Private constructor called in begin/end, which are friends of HeapPriorityQueue<T,tgt>
+        //Private constructor called in begin/end, which are friends of FibPriorityQueue<T,tgt>
         ~Iterator();
         T           erase();
         std::string str  () const;
-        HeapPriorityQueue<T,tgt>::Iterator& operator ++ ();
-        HeapPriorityQueue<T,tgt>::Iterator  operator ++ (int);
-        bool operator == (const HeapPriorityQueue<T,tgt>::Iterator& rhs) const;
-        bool operator != (const HeapPriorityQueue<T,tgt>::Iterator& rhs) const;
+        FibPriorityQueue<T,tgt>::Iterator& operator ++ ();
+        FibPriorityQueue<T,tgt>::Iterator  operator ++ (int);
+        bool operator == (const FibPriorityQueue<T,tgt>::Iterator& rhs) const;
+        bool operator != (const FibPriorityQueue<T,tgt>::Iterator& rhs) const;
         T& operator *  () const;
         T* operator -> () const;
-        friend std::ostream& operator << (std::ostream& outs, const HeapPriorityQueue<T,tgt>::Iterator& i) {
+        friend std::ostream& operator << (std::ostream& outs, const FibPriorityQueue<T,tgt>::Iterator& i) {
           outs << i.str(); //Use the same meaning as the debugging .str() method
           return outs;
         }
 
-        friend Iterator HeapPriorityQueue<T,tgt>::begin () const;
-        friend Iterator HeapPriorityQueue<T,tgt>::end   () const;
+        friend Iterator FibPriorityQueue<T,tgt>::begin () const;
+        friend Iterator FibPriorityQueue<T,tgt>::end   () const;
 
       private:
         //If can_erase is false, the value has been removed from "it" (++ does nothing)
-        HeapPriorityQueue<T,tgt>  it;                 //copy of HPQ (from begin), to use as iterator via dequeue
-        HeapPriorityQueue<T,tgt>* ref_pq;
+        FibPriorityQueue<T,tgt>  it;                 //copy of HPQ (from begin), to use as iterator via dequeue
+        FibPriorityQueue<T,tgt>* ref_pq;
         int                       expected_mod_count;
         bool                      can_erase = true;
 
         //Called in friends begin/end
         //These constructors have different initializers (see it(...) in first one)
-        Iterator(HeapPriorityQueue<T,tgt>* iterate_over, bool from_begin);    // Called by begin
-        Iterator(HeapPriorityQueue<T,tgt>* iterate_over);                     // Called by end
+        Iterator(FibPriorityQueue<T,tgt>* iterate_over, bool from_begin);    // Called by begin
+        Iterator(FibPriorityQueue<T,tgt>* iterate_over);                     // Called by end
     };
 
 
@@ -124,35 +124,35 @@ template<class T, bool (*tgt)(const T& a, const T& b) = nullptr> class HeapPrior
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-//HeapPriorityQueue class and related definitions
+//FibPriorityQueue class and related definitions
 
 //Destructor/Constructors
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-HeapPriorityQueue<T,tgt>::~HeapPriorityQueue() {
+FibPriorityQueue<T,tgt>::~FibPriorityQueue() {
   delete[] pq;
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-HeapPriorityQueue<T,tgt>::HeapPriorityQueue(bool (*cgt)(const T& a, const T& b))
+FibPriorityQueue<T,tgt>::FibPriorityQueue(bool (*cgt)(const T& a, const T& b))
 : gt(tgt != nullptr ? tgt : cgt) {
   if (gt == nullptr)
-    throw TemplateFunctionError("HeapPriorityQueue::default constructor: neither specified");
+    throw TemplateFunctionError("FibPriorityQueue::default constructor: neither specified");
   if (tgt != nullptr && cgt != nullptr && tgt != cgt)
-    throw TemplateFunctionError("HeapPriorityQueue::default constructor: both specified and different");
+    throw TemplateFunctionError("FibPriorityQueue::default constructor: both specified and different");
 
   pq = new T[length];
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-HeapPriorityQueue<T,tgt>::HeapPriorityQueue(int initial_length, bool (*cgt)(const T& a, const T& b))
+FibPriorityQueue<T,tgt>::FibPriorityQueue(int initial_length, bool (*cgt)(const T& a, const T& b))
 : gt(tgt != nullptr ? tgt : cgt), length(initial_length) {
   if (gt == nullptr)
-    throw TemplateFunctionError("HeapPriorityQueue::length constructor: neither specified");
+    throw TemplateFunctionError("FibPriorityQueue::length constructor: neither specified");
   if (tgt != nullptr && cgt != nullptr && tgt != cgt)
-    throw TemplateFunctionError("HeapPriorityQueue::length constructor: both specified and different");
+    throw TemplateFunctionError("FibPriorityQueue::length constructor: both specified and different");
 
   if (length < 0)
     length = 0;
@@ -161,12 +161,12 @@ HeapPriorityQueue<T,tgt>::HeapPriorityQueue(int initial_length, bool (*cgt)(cons
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-HeapPriorityQueue<T,tgt>::HeapPriorityQueue(const HeapPriorityQueue<T,tgt>& to_copy, bool (*cgt)(const T& a, const T& b))
+FibPriorityQueue<T,tgt>::FibPriorityQueue(const FibPriorityQueue<T,tgt>& to_copy, bool (*cgt)(const T& a, const T& b))
 : gt(tgt != nullptr ? tgt : cgt), length(to_copy.length), used(to_copy.used) {
   if (gt == nullptr)
-    gt = to_copy.gt;//throw TemplateFunctionError("HeapPriorityQueue::copy constructor: neither specified");
+    gt = to_copy.gt;//throw TemplateFunctionError("FibPriorityQueue::copy constructor: neither specified");
   if (tgt != nullptr && cgt != nullptr && tgt != cgt)
-    throw TemplateFunctionError("HeapPriorityQueue::copy constructor: both specified and different");
+    throw TemplateFunctionError("FibPriorityQueue::copy constructor: both specified and different");
 
   pq = new T[length];
   for (int i=0; i<to_copy.used; ++i)
@@ -178,12 +178,12 @@ HeapPriorityQueue<T,tgt>::HeapPriorityQueue(const HeapPriorityQueue<T,tgt>& to_c
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-HeapPriorityQueue<T,tgt>::HeapPriorityQueue(const std::initializer_list<T>& il, bool (*cgt)(const T& a, const T& b))
+FibPriorityQueue<T,tgt>::FibPriorityQueue(const std::initializer_list<T>& il, bool (*cgt)(const T& a, const T& b))
 : gt(tgt != nullptr ? tgt : cgt), length(il.size()) {
   if (gt == nullptr)
-    throw TemplateFunctionError("HeapPriorityQueue::initializer_list constructor: neither specified");
+    throw TemplateFunctionError("FibPriorityQueue::initializer_list constructor: neither specified");
   if (tgt != nullptr && cgt != nullptr && tgt != cgt)
-    throw TemplateFunctionError("HeapPriorityQueue::initializer_list constructor: both specified and different");
+    throw TemplateFunctionError("FibPriorityQueue::initializer_list constructor: both specified and different");
 
   pq = new T[length];
   int i = 0;
@@ -197,12 +197,12 @@ HeapPriorityQueue<T,tgt>::HeapPriorityQueue(const std::initializer_list<T>& il, 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 template<class Iterable>
-HeapPriorityQueue<T,tgt>::HeapPriorityQueue(const Iterable& i, bool (*cgt)(const T& a, const T& b))
+FibPriorityQueue<T,tgt>::FibPriorityQueue(const Iterable& i, bool (*cgt)(const T& a, const T& b))
 : gt(tgt != nullptr ? tgt : cgt), length(i.size()) {
   if (gt == nullptr)
-    throw TemplateFunctionError("HeapPriorityQueue::Iterable constructor: neither specified");
+    throw TemplateFunctionError("FibPriorityQueue::Iterable constructor: neither specified");
   if (tgt != nullptr && cgt != nullptr && tgt != cgt)
-    throw TemplateFunctionError("HeapPriorityQueue::Iterable constructor: both specified and different");
+    throw TemplateFunctionError("FibPriorityQueue::Iterable constructor: both specified and different");
 
   pq = new T[length];
   int j = 0;
@@ -219,30 +219,30 @@ HeapPriorityQueue<T,tgt>::HeapPriorityQueue(const Iterable& i, bool (*cgt)(const
 //Queries
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-bool HeapPriorityQueue<T,tgt>::empty() const {
+bool FibPriorityQueue<T,tgt>::empty() const {
   return used == 0;
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-int HeapPriorityQueue<T,tgt>::size() const {
+int FibPriorityQueue<T,tgt>::size() const {
   return used;
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-T& HeapPriorityQueue<T,tgt>::peek () const {
+T& FibPriorityQueue<T,tgt>::peek () const {
   if (empty())
-    throw EmptyError("HeapPriorityQueue::peek");
+    throw EmptyError("FibPriorityQueue::peek");
 
   return pq[0];
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-std::string HeapPriorityQueue<T,tgt>::str() const {
+std::string FibPriorityQueue<T,tgt>::str() const {
   std::ostringstream answer;
-  answer << "HeapPriorityQueue[";
+  answer << "FibPriorityQueue[";
 
   if (length != 0) {
     answer << "0:" << pq[0];
@@ -260,7 +260,7 @@ std::string HeapPriorityQueue<T,tgt>::str() const {
 //Commands
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-int HeapPriorityQueue<T,tgt>::enqueue(const T& element) {
+int FibPriorityQueue<T,tgt>::enqueue(const T& element) {
   this->ensure_length(used+1);
   pq[used++] = element;
 
@@ -271,9 +271,9 @@ int HeapPriorityQueue<T,tgt>::enqueue(const T& element) {
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-T HeapPriorityQueue<T,tgt>::dequeue() {
+T FibPriorityQueue<T,tgt>::dequeue() {
   if (this->empty())
-    throw EmptyError("HeapPriorityQueue::dequeue");
+    throw EmptyError("FibPriorityQueue::dequeue");
 
   T to_return = pq[0];
   pq[0] = pq[--used];
@@ -286,7 +286,7 @@ T HeapPriorityQueue<T,tgt>::dequeue() {
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-void HeapPriorityQueue<T,tgt>::clear() {
+void FibPriorityQueue<T,tgt>::clear() {
   used = 0;
   ++mod_count;
 }
@@ -294,7 +294,7 @@ void HeapPriorityQueue<T,tgt>::clear() {
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 template <class Iterable>
-int HeapPriorityQueue<T,tgt>::enqueue_all (const Iterable& i) {
+int FibPriorityQueue<T,tgt>::enqueue_all (const Iterable& i) {
   int count = 0;
   for (const T& v : i)
      count += enqueue(v);
@@ -308,7 +308,7 @@ int HeapPriorityQueue<T,tgt>::enqueue_all (const Iterable& i) {
 //Operators
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-HeapPriorityQueue<T,tgt>& HeapPriorityQueue<T,tgt>::operator = (const HeapPriorityQueue<T,tgt>& rhs) {
+FibPriorityQueue<T,tgt>& FibPriorityQueue<T,tgt>::operator = (const FibPriorityQueue<T,tgt>& rhs) {
   if (this == &rhs)
     return *this;
 
@@ -324,14 +324,14 @@ HeapPriorityQueue<T,tgt>& HeapPriorityQueue<T,tgt>::operator = (const HeapPriori
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-bool HeapPriorityQueue<T,tgt>::operator == (const HeapPriorityQueue<T,tgt>& rhs) const {
+bool FibPriorityQueue<T,tgt>::operator == (const FibPriorityQueue<T,tgt>& rhs) const {
   if (this == &rhs)
     return true;
   if (gt != rhs.gt) //For PriorityQueues to be equal, they need the same gt function, and values
     return false;
   if (used != rhs.size())
     return false;
-  HeapPriorityQueue<T,tgt>::Iterator l = this->begin(), r = rhs.begin();
+  FibPriorityQueue<T,tgt>::Iterator l = this->begin(), r = rhs.begin();
   for (int i=0; i<used; ++i, ++l, ++r)
     if (*l != *r)
       return false;
@@ -341,13 +341,13 @@ bool HeapPriorityQueue<T,tgt>::operator == (const HeapPriorityQueue<T,tgt>& rhs)
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-bool HeapPriorityQueue<T,tgt>::operator != (const HeapPriorityQueue<T,tgt>& rhs) const {
+bool FibPriorityQueue<T,tgt>::operator != (const FibPriorityQueue<T,tgt>& rhs) const {
   return !(*this == rhs);
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-std::ostream& operator << (std::ostream& outs, const HeapPriorityQueue<T,tgt>& p) {
+std::ostream& operator << (std::ostream& outs, const FibPriorityQueue<T,tgt>& p) {
   outs << "priority_queue[";
 
   if (!p.empty()) {
@@ -367,14 +367,14 @@ std::ostream& operator << (std::ostream& outs, const HeapPriorityQueue<T,tgt>& p
 //Iterator constructors
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-auto HeapPriorityQueue<T,tgt>::begin () const -> HeapPriorityQueue<T,tgt>::Iterator {
-    return Iterator(const_cast<HeapPriorityQueue<T,tgt>*>(this),true);
+auto FibPriorityQueue<T,tgt>::begin () const -> FibPriorityQueue<T,tgt>::Iterator {
+    return Iterator(const_cast<FibPriorityQueue<T,tgt>*>(this),true);
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-auto HeapPriorityQueue<T,tgt>::end () const -> HeapPriorityQueue<T,tgt>::Iterator {
-  return Iterator(const_cast<HeapPriorityQueue<T,tgt>*>(this));  //Create empty pq (size == 0)
+auto FibPriorityQueue<T,tgt>::end () const -> FibPriorityQueue<T,tgt>::Iterator {
+  return Iterator(const_cast<FibPriorityQueue<T,tgt>*>(this));  //Create empty pq (size == 0)
 }
 
 
@@ -383,7 +383,7 @@ auto HeapPriorityQueue<T,tgt>::end () const -> HeapPriorityQueue<T,tgt>::Iterato
 //Private helper methods
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-void HeapPriorityQueue<T,tgt>::ensure_length(int new_length) {
+void FibPriorityQueue<T,tgt>::ensure_length(int new_length) {
   if (length >= new_length)
     return;
   T*  old_pq  = pq;
@@ -397,35 +397,35 @@ void HeapPriorityQueue<T,tgt>::ensure_length(int new_length) {
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-int HeapPriorityQueue<T,tgt>::left_child(int i) const
+int FibPriorityQueue<T,tgt>::left_child(int i) const
 {return 2*i+1;}
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-int HeapPriorityQueue<T,tgt>::right_child(int i) const
+int FibPriorityQueue<T,tgt>::right_child(int i) const
 {return 2*i+2;}
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-int HeapPriorityQueue<T,tgt>::parent(int i) const
+int FibPriorityQueue<T,tgt>::parent(int i) const
 {return (i-1)/2;}
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-bool HeapPriorityQueue<T,tgt>::is_root(int i) const
+bool FibPriorityQueue<T,tgt>::is_root(int i) const
 {return i == 0;}
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-bool HeapPriorityQueue<T,tgt>::in_heap(int i) const
+bool FibPriorityQueue<T,tgt>::in_heap(int i) const
 {return i < used;}
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-void HeapPriorityQueue<T,tgt>::percolate_up(int i) {
+void FibPriorityQueue<T,tgt>::percolate_up(int i) {
   for (/*parameter*/; !is_root(i) && gt(pq[i],pq[parent(i)]); i = parent(i))
     std::swap(pq[parent(i)],pq[i]);
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-void HeapPriorityQueue<T,tgt>::percolate_down(int i) {
+void FibPriorityQueue<T,tgt>::percolate_down(int i) {
   for (int l = left_child(i); in_heap(l); l = left_child(i)) {
     int r = right_child(i);
     int max_child = (!in_heap(r) || gt(pq[l],pq[r]) ? l : r);
@@ -439,7 +439,7 @@ void HeapPriorityQueue<T,tgt>::percolate_down(int i) {
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-void HeapPriorityQueue<T,tgt>::heapify() {
+void FibPriorityQueue<T,tgt>::heapify() {
 for (int i = used-1; i >= 0; --i)
   percolate_down(i);
 }
@@ -450,32 +450,32 @@ for (int i = used-1; i >= 0; --i)
 //Iterator class definitions
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-HeapPriorityQueue<T,tgt>::Iterator::Iterator(HeapPriorityQueue<T,tgt>* iterate_over, bool tgt_nullptr)
+FibPriorityQueue<T,tgt>::Iterator::Iterator(FibPriorityQueue<T,tgt>* iterate_over, bool tgt_nullptr)
 : it(*iterate_over,iterate_over->gt), ref_pq(iterate_over), expected_mod_count(iterate_over->mod_count) {
   // Full priority queue; use copy constructor
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-HeapPriorityQueue<T,tgt>::Iterator::Iterator(HeapPriorityQueue<T,tgt>* iterate_over)
+FibPriorityQueue<T,tgt>::Iterator::Iterator(FibPriorityQueue<T,tgt>* iterate_over)
 : it(iterate_over->gt), ref_pq(iterate_over), expected_mod_count(iterate_over->mod_count) {
   // Empty priority queue; use default constructor (from declaration of "it")
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-HeapPriorityQueue<T,tgt>::Iterator::~Iterator()
+FibPriorityQueue<T,tgt>::Iterator::~Iterator()
 {}
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-T HeapPriorityQueue<T,tgt>::Iterator::erase() {
+T FibPriorityQueue<T,tgt>::Iterator::erase() {
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::erase");
+    throw ConcurrentModificationError("FibPriorityQueue::Iterator::erase");
   if (!can_erase)
-    throw CannotEraseError("HeapPriorityQueue::Iterator::erase Iterator cursor already erased");
+    throw CannotEraseError("FibPriorityQueue::Iterator::erase Iterator cursor already erased");
   if (it.empty())
-    throw CannotEraseError("HeapPriorityQueue::Iterator::erase Iterator cursor beyond data structure");
+    throw CannotEraseError("FibPriorityQueue::Iterator::erase Iterator cursor beyond data structure");
 
   can_erase = false;
   T to_return = it.dequeue();
@@ -495,7 +495,7 @@ T HeapPriorityQueue<T,tgt>::Iterator::erase() {
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-std::string HeapPriorityQueue<T,tgt>::Iterator::str() const {
+std::string FibPriorityQueue<T,tgt>::Iterator::str() const {
   std::ostringstream answer;
   answer << it.str() << "/expected_mod_count=" << expected_mod_count << "/can_erase=" << can_erase;
   return answer.str();
@@ -504,9 +504,9 @@ std::string HeapPriorityQueue<T,tgt>::Iterator::str() const {
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-auto HeapPriorityQueue<T,tgt>::Iterator::operator ++ () -> HeapPriorityQueue<T,tgt>::Iterator& {
+auto FibPriorityQueue<T,tgt>::Iterator::operator ++ () -> FibPriorityQueue<T,tgt>::Iterator& {
 if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator ++");
+    throw ConcurrentModificationError("FibPriorityQueue::Iterator::operator ++");
 
   if (it.empty())
     return *this;
@@ -521,9 +521,9 @@ if (expected_mod_count != ref_pq->mod_count)
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-auto HeapPriorityQueue<T,tgt>::Iterator::operator ++ (int) -> HeapPriorityQueue<T,tgt>::Iterator {
+auto FibPriorityQueue<T,tgt>::Iterator::operator ++ (int) -> FibPriorityQueue<T,tgt>::Iterator {
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator ++(int)");
+    throw ConcurrentModificationError("FibPriorityQueue::Iterator::operator ++(int)");
 
   if (it.empty())
     return *this;
@@ -539,14 +539,14 @@ auto HeapPriorityQueue<T,tgt>::Iterator::operator ++ (int) -> HeapPriorityQueue<
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-bool HeapPriorityQueue<T,tgt>::Iterator::operator == (const HeapPriorityQueue<T,tgt>::Iterator& rhs) const {
+bool FibPriorityQueue<T,tgt>::Iterator::operator == (const FibPriorityQueue<T,tgt>::Iterator& rhs) const {
   const Iterator* rhsASI = dynamic_cast<const Iterator*>(&rhs);
   if (rhsASI == 0)
-    throw IteratorTypeError("HeapPriorityQueue::Iterator::operator ==");
+    throw IteratorTypeError("FibPriorityQueue::Iterator::operator ==");
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator ==");
+    throw ConcurrentModificationError("FibPriorityQueue::Iterator::operator ==");
   if (ref_pq != rhsASI->ref_pq)
-    throw ComparingDifferentIteratorsError("HeapPriorityQueue::Iterator::operator ==");
+    throw ComparingDifferentIteratorsError("FibPriorityQueue::Iterator::operator ==");
 
   //Two iterators on the same heap are equal if their sizes are equal
   return this->it.size() == rhsASI->it.size();
@@ -554,40 +554,40 @@ bool HeapPriorityQueue<T,tgt>::Iterator::operator == (const HeapPriorityQueue<T,
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-bool HeapPriorityQueue<T,tgt>::Iterator::operator != (const HeapPriorityQueue<T,tgt>::Iterator& rhs) const {
+bool FibPriorityQueue<T,tgt>::Iterator::operator != (const FibPriorityQueue<T,tgt>::Iterator& rhs) const {
   const Iterator* rhsASI = dynamic_cast<const Iterator*>(&rhs);
   if (rhsASI == 0)
-    throw IteratorTypeError("HeapPriorityQueue::Iterator::operator !=");
+    throw IteratorTypeError("FibPriorityQueue::Iterator::operator !=");
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator !=");
+    throw ConcurrentModificationError("FibPriorityQueue::Iterator::operator !=");
   if (ref_pq != rhsASI->ref_pq)
-    throw ComparingDifferentIteratorsError("HeapPriorityQueue::Iterator::operator !=");
+    throw ComparingDifferentIteratorsError("FibPriorityQueue::Iterator::operator !=");
 
   return this->it.size() != rhsASI->it.size();
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-T& HeapPriorityQueue<T,tgt>::Iterator::operator *() const {
+T& FibPriorityQueue<T,tgt>::Iterator::operator *() const {
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator *");
+    throw ConcurrentModificationError("FibPriorityQueue::Iterator::operator *");
   if (!can_erase || it.empty())
-    throw IteratorPositionIllegal("HeapPriorityQueue::Iterator::operator * Iterator illegal: exhausted");
+    throw IteratorPositionIllegal("FibPriorityQueue::Iterator::operator * Iterator illegal: exhausted");
 
   return it.peek();
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-T* HeapPriorityQueue<T,tgt>::Iterator::operator ->() const {
+T* FibPriorityQueue<T,tgt>::Iterator::operator ->() const {
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator *");
+    throw ConcurrentModificationError("FibPriorityQueue::Iterator::operator *");
   if (!can_erase || it.empty())
-    throw IteratorPositionIllegal("HeapPriorityQueue::Iterator::operator -> Iterator illegal: exhausted");
+    throw IteratorPositionIllegal("FibPriorityQueue::Iterator::operator -> Iterator illegal: exhausted");
 
   return &it.peek();
 }
 
 }
 
-#endif /* HEAP_PRIORITY_QUEUE_HPP_ */
+#endif /* FIB_PRIORITY_QUEUE_HPP_ */
