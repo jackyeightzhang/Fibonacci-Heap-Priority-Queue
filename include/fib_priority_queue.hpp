@@ -110,11 +110,12 @@ template<class T, bool (*tgt)(const T& a, const T& b) = nullptr> class FibPriori
 	    		T value;
 		};
 
-		class FRN : FN {
+		class FRN : public FN {
 	    	public:
-	    	    FRN() { prevRootNode = this; nextRootNode = this; } 
+	    	    FRN() 
+					: prevRootNode(this), nextRootNode(this) {}
 				FRN(const FRN& frn)	
-					: prevRootNode(frn.prevRootNode), nextRootNode(frn.nextRootNode){}
+					: FN(frn.FN), prevRootNode(frn.prevRootNode), nextRootNode(frn.nextRootNode){}
 				FRN(ArraySet<FN*> cn, FN* pn, T v, FRN* prn = nullptr, FRN* nrn = nullptr) 			
 					: FN(cn,pn,v), prevRootNode(prn), nextRootNode(nrn){}
 
