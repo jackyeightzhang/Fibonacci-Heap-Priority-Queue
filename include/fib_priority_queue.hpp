@@ -1,6 +1,8 @@
 #ifndef FIB_PRIORITY_QUEUE_HPP_
 #define FIB_PRIORITY_QUEUE_HPP_
 
+#include <cmath>
+
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -105,7 +107,8 @@ class FibPriorityQueue {
 			HN(const HN& toCopy)	: value(toCopy.value) { childNodes = toCopy.childNodes; }
 			HN(const T& value)		: value(value) {}
 			
-			int addChild(HN* newChildNode) { childNodes.insert(newChildNode); }
+			int addChild(HN* newChildNode) { return childNodes.insert(newChildNode); }
+			const ArraySet<HN*>& getChildNodes() { return childNodes; }
 			const T& getValue() { return value; }
 
 		private:	
@@ -126,10 +129,12 @@ class FibPriorityQueue {
 		
 		bool (*gt) (const T& a, const T& b);	// The gt used by enqueue (from template or constructor)
 		int nodeCount		= 0;				// The number of nodes in the heap
+		int rootNodeCount	= 0;				// The number of root nodes in the root node list
 		DLN* minRootNode	= nullptr;			// A pointer to the minimum value 
 		
 		//Helper methods
-		void addRootNode(DLN* toAdd);
+		void addRootNode(DLN* toAdd);			// Adds a root node to the root list
+		void consolidateRank();					// Ensures no two root nodes have the same rank
 };
 
 
@@ -144,6 +149,7 @@ class FibPriorityQueue {
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>::~FibPriorityQueue() {
+	while(minRootNode != nullptr) dequeue();
 }
 
 
@@ -157,10 +163,10 @@ FibPriorityQueue<T,tgt>::FibPriorityQueue(bool (*cgt)(const T& a, const T& b))
 }
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-FibPriorityQueue<T,tgt>::FibPriorityQueue(const FibPriorityQueue<T,tgt>& to_copy, bool (*cgt)(const T& a, const T& b))
-: gt(tgt != nullptr ? tgt : cgt), nodeCount(to_copy.nodeCount) {
+FibPriorityQueue<T,tgt>::FibPriorityQueue(const FibPriorityQueue<T,tgt>& toCopy, bool (*cgt)(const T& a, const T& b))
+: gt(tgt != nullptr ? tgt : cgt), nodeCount(toCopy.nodeCount) {
 	if (gt == nullptr)
-		gt = to_copy.gt; throw TemplateFunctionError("FibPriorityQueue::copy constructor: neither specified");
+		gt = toCopy.gt; throw TemplateFunctionError("FibPriorityQueue::copy constructor: neither specified");
 	if (tgt != nullptr && cgt != nullptr && tgt != cgt)
 		throw TemplateFunctionError("FibPriorityQueue::copy constructor: both specified and different");
 
@@ -228,12 +234,10 @@ template<class T, bool (*tgt)(const T& a, const T& b)>
 int FibPriorityQueue<T,tgt>::enqueue(const T& element) {
 	HN* tempHeapNode = new HN(element);
 	DLN* tempRootNode = new DLN(tempHeapNode);
-	if(empty()) {
-		minRootNode = tempRootNode;
-	} else {
-		addRootNode(tempRootNode);		
-		if(minRootNode->heapNode->getValue() > element) minRootNode = tempRootNode; 
-	}
+
+	addRootNode(tempRootNode);
+
+	++rootNodeCount;
 	++nodeCount; 
 	return 1;
 }
@@ -243,6 +247,32 @@ template<class T, bool (*tgt)(const T& a, const T& b)>
 T FibPriorityQueue<T,tgt>::dequeue() {
 	if (this->empty())
 		throw EmptyError("FibPriorityQueue::dequeue");
+
+	T minVal = minRootNode->heapNode->getValue();
+
+	DLN* tempRootNode = nullptr;
+	for(HN* currentChild : minRootNode->heapNode->getChildNodes()) {
+		tempRootNode = new DLN(currentChild);
+		addRootNode(tempRootNode);
+	}
+
+	DLN* oldMinRootNode = minRootNode;
+
+	minRootNode = minRootNode->nextNode;
+	if(minRootNode == oldMinRootNode) {
+		minRootNode = nullptr;
+	} else {		
+		oldMinRootNode->nextNode->prevNode = oldMinRootNode->prevNode;
+		oldMinRootNode->prevNode->nextNode = oldMinRootNode->nextNode;
+	}
+
+	delete oldMinRootNode->heapNode;
+	delete oldMinRootNode;
+	--rootNodeCount;
+
+	consolidateRank();
+
+	return minVal;
 }
 
 
@@ -309,11 +339,24 @@ auto FibPriorityQueue<T,tgt>::end () const -> FibPriorityQueue<T,tgt>::Iterator 
 //Private helper methods
 template<class T, bool (*tgt)(const T& a, const T& b)>
 void FibPriorityQueue<T,tgt>::addRootNode(DLN* toAdd){
-	minRootNode->nextNode->prevNode = toAdd;
-	toAdd->prevNode = minRootNode;
+	if(minRootNode == nullptr) {
+		minRootNode = toAdd;
+	} else {
 
-	toAdd->nextNode = minRootNode->nextNode;
-	minRootNode->nextNode = toAdd;
+		minRootNode->nextNode->prevNode = toAdd;
+		toAdd->prevNode = minRootNode;
+
+		toAdd->nextNode = minRootNode->nextNode;
+		minRootNode->nextNode = toAdd;
+	}
+}
+
+template<class T, bool (*tgt)(const T& a, const T& b)>
+void FibPriorityQueue<T,tgt>::consolidateRank(){
+	DLN* rankArray[static_cast<int>(log2(nodeCount))];
+
+	for(int rootNodeIndex = 0; rootNodeIndex < rootNodeCount; ++rootNodeIndex);
+		
 }
 
 ////////////////////////////////////////////////////////////////////////////////
