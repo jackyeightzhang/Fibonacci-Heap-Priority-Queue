@@ -133,7 +133,7 @@ class FibPriorityQueue {
 		bool (*gt) (const T& a, const T& b);				// The gt used by enqueue (from template or constructor)
 		int nodeCount		= 0;							// The number of nodes in the heap
 		int rootNodeCount	= 0;							// The number of root nodes in the root node list
-		DLN* minRootNode	= nullptr;						// A pointer to the minimum value 
+		DLN* headRootNode	= nullptr;						// A pointer to the head value 
 		
 		//Helper methods
 		void addRootNode(DLN* prevRootNode, DLN* toAdd);	// Adds a root node to the root list
@@ -153,7 +153,7 @@ class FibPriorityQueue {
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>::~FibPriorityQueue() {
-	while(minRootNode != nullptr) dequeue();
+	while(headRootNode != nullptr) dequeue();
 }
 
 
@@ -217,7 +217,7 @@ int FibPriorityQueue<T,tgt>::size() const {
 template<class T, bool (*tgt)(const T& a, const T& b)>
 T& FibPriorityQueue<T,tgt>::peek () const {
 	if(empty()) throw EmptyError("FibPriorityQueue::peek"); 
-	return minRootNode->heapNode->getValue();
+	return headRootNode->getValue();
 }
 
 
@@ -238,15 +238,15 @@ int FibPriorityQueue<T,tgt>::enqueue(const T& element) {
 	HN* tempHeapNode = new HN(element);
 	DLN* tempRootNode = new DLN(tempHeapNode);
 
-	if(minRootNode == nullptr) {
-		minRootNode = tempRootNode;
+	if(headRootNode == nullptr) {
+		headRootNode = tempRootNode;
 		++rootNodeCount;
 	} else {
-		addRootNode(minRootNode, tempRootNode);
+		addRootNode(headRootNode, tempRootNode);
 	}
 
-	if(minRootNode->getValue() > tempRootNode->getValue()) {
-		minRootNode = tempRootNode;
+	if(gt(tempRootNode->getValue(), headRootNode->getValue())) {
+		headRootNode = tempRootNode;
 	}
 
 	++nodeCount; 
@@ -259,31 +259,31 @@ T FibPriorityQueue<T,tgt>::dequeue() {
 	if (this->empty())
 		throw EmptyError("FibPriorityQueue::dequeue");
 
-	T minVal = minRootNode->getValue();
+	T headValue = headRootNode->getValue();
 
 	DLN* tempRootNode = nullptr;
-	for(HN* currentChild : minRootNode->getChildNodes()) {
+	for(HN* currentChild : headRootNode->getChildNodes()) {
 		tempRootNode = new DLN(currentChild);
-		addRootNode(minRootNode, tempRootNode);
+		addRootNode(headRootNode, tempRootNode);
 	}
 
-	DLN* oldMinRootNode = minRootNode;
+	DLN* oldHeadRootNode = headRootNode;
 
-	minRootNode = minRootNode->nextNode;
-	if(minRootNode == oldMinRootNode) {
-		minRootNode = nullptr;
+	headRootNode = headRootNode->nextNode;
+	if(headRootNode == oldHeadRootNode) {
+		headRootNode = nullptr;
 		--rootNodeCount;
 	} else {
-		removeRootNode(oldMinRootNode);
+		removeRootNode(oldHeadRootNode);
 	}
 
-	delete oldMinRootNode->heapNode;
-	delete oldMinRootNode;
+	delete oldHeadRootNode->heapNode;
+	delete oldHeadRootNode;
 	--nodeCount;
 
 	consolidateRank();
 
-	return minVal;
+	return headValue;
 }
 
 
@@ -371,20 +371,20 @@ void FibPriorityQueue<T,tgt>::consolidateRank() {
 
 	int currentRank = -1;
 	int oldRootNodeCount = rootNodeCount;
-	DLN* currentRootNode = minRootNode;
-	DLN* nextRootNode = minRootNode->nextNode;
+	DLN* currentRootNode = headRootNode;
+	DLN* nextRootNode = headRootNode->nextNode;
 	DLN* rankArray[static_cast<int>(log2(nodeCount)) + 1] = { nullptr };
 
 	for(int rootNodeIndex = 0; rootNodeIndex < oldRootNodeCount; ++rootNodeIndex) {
-		if(minRootNode->getValue() > currentRootNode->getValue()) {
-			minRootNode = currentRootNode;
+		if(gt(currentRootNode->getValue(), headRootNode->getValue())) {
+			headRootNode = currentRootNode;
 		}
 		
 		currentRank = currentRootNode->getChildNodes().size();
 
 		// Keep iterating while there exist another root node with the same rank
 		while(rankArray[currentRank] != nullptr) {
-			if(rankArray[currentRank]->getValue() < currentRootNode->getValue()) {
+			if(gt(rankArray[currentRank]->getValue(), currentRootNode->getValue())) {
 				rankArray[currentRank]->addChild(currentRootNode->heapNode);
 				removeRootNode(currentRootNode);
 				delete currentRootNode;
