@@ -122,7 +122,7 @@ class FibPriorityQueue {
 
 
 			int addChild(HN* newChildNode) { return heapNode->getChildNodes().insert(newChildNode); }
-			const ArraySet<HN*>& getChildNodes() { return heapNode->getChildNodes(); }
+			ArraySet<HN*>& getChildNodes() { return heapNode->getChildNodes(); }
 			const T& getValue() { return heapNode->getValue(); }
 						
 			HN* heapNode;
@@ -139,6 +139,10 @@ class FibPriorityQueue {
 		void addRootNode(DLN* prevRootNode, DLN* toAdd);	// Adds a root node to the root list
 		void removeRootNode(DLN* toRemove);					// removes a root node from the root list
 		void consolidateRank();								// Ensures no two root nodes have the same rank
+		DLN* copyFibTree(DLN* originalTree);
+		HN* copyFibBranch(HN* originalBranch);
+		void destroyTree(DLN* originalTree);
+		void destroyBranch(HN* originalBranch);
 };
 
 
@@ -306,7 +310,7 @@ int FibPriorityQueue<T,tgt>::enqueue_all (const Iterable& i) {
 //Operators
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-FibPriorityQueue<T,tgt>& FibPriorityQueue<T,tgt>::operator = (const FibPriorityQueue<T,tgt>& rhs) {
+FibPriorityQueue<T,tgt>& FibPriorityQueue<T,tgt>::operator = (const FibPriorityQueue<T,tgt>& rhs) {	
 	return *this;
 }
 
@@ -404,6 +408,63 @@ void FibPriorityQueue<T,tgt>::consolidateRank() {
 		
 }
 
+template<class T, bool (*tgt)(const T& a, const T& b)>
+typename FibPriorityQueue<T,tgt>::DLN* FibPriorityQueue<T,tgt>::copyFibTree(DLN* originalTree) {
+	DLN* cursor = originalTree;
+	if(cursor == nullptr) return cursor;
+	//add headRootNode in order to use addRootNode
+	//also make a deep copy of the fib branch and connect it to the root
+	DLN* returnHeadRootNode = new DLN(copyFibBranch(cursor->heapNode));	
+	cursor = cursor->nextNode;
+
+	//traverse through every root node and add to the doublely linked list copy
+	while(cursor != originalTree)	{	
+		//make a deep copy of fib branch at cursor and connect to root
+		DLN* tempRootNode = new DLN(copyFibBranch(cursor->heapNode));
+		//connect this hanging root node to the doublely linked list
+		addRootNode(returnHeadRootNode, tempRootNode);
+		cursor = cursor->nextNode;
+	}
+	return returnHeadRootNode;
+}
+	
+template<class T, bool (*tgt)(const T& a, const T& b)>
+typename FibPriorityQueue<T,tgt>::HN* FibPriorityQueue<T,tgt>::copyFibBranch(HN* originalBranch) {
+	//traverse recursively through fib branch
+	HN* copyBranch = new HN(originalBranch->getValue());
+	//make deep copies of the child nodes, else jump to return
+	for(auto childNode : originalBranch->getChildNodes())	
+		copyBranch.addChild(copyFibBranch(childNode));
+	return copyBranch;
+}
+
+template<class T, bool (*tgt)(const T& a, const T& b)>
+void FibPriorityQueue<T,tgt>::destroyTree(DLN* originalTree) {
+	DLN* cursor = originalTree;
+
+	//traverse through doublely linked list 
+	while(cursor != nullptr) {		
+		//delete entire fib heap
+		destroyBranch(cursor->heapNode);
+	
+		//delete root node
+		DLN* toDelete = cursor;
+		//if there exist only on branch then set it to null to end loop
+		if(cursor == cursor->nextNode) cursor = nullptr;
+		else cursor = cursor->nextNode;
+		removeRootNode(toDelete);
+		delete toDelete;
+	}
+}
+
+template<class T, bool (*tgt)(const T& a, const T& b)>
+void FibPriorityQueue<T,tgt>::destroyBranch(HN* originalBranch) {	
+	//recursively delete children before deleting node, else delete self
+	for(auto childNode : originalBranch->getChildNodes())	
+		destroyBranch(childNode);
+	//delete node
+	delete originalBranch;
+}
 ////////////////////////////////////////////////////////////////////////////////
 //
 //Iterator class definitions
@@ -443,7 +504,7 @@ T FibPriorityQueue<T,tgt>::Iterator::erase() {
 	for (int i=0; i<ref_pq->used; ++i)
 		if (ref_pq->pq[i] == to_return) {
 			ref_pq->pq[i] = ref_pq->pq[--ref_pq->used];
-			ref_pq->percolate_up(i);
+			ref_pq->percolate_up(i);originalBranch-
 			ref_pq->percolate_down(i);
 			break;
 		}
@@ -459,7 +520,6 @@ std::string FibPriorityQueue<T,tgt>::Iterator::str() const {
 	answer << it.str() << "/expected_mod_count=" << expected_mod_count << "/can_erase=" << can_erase;
 	return answer.str();
 }
-
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
