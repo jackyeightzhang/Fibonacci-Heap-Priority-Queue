@@ -130,15 +130,15 @@ class FibPriorityQueue {
 			DLN* nextNode;
 		};
 		
-		bool (*gt) (const T& a, const T& b);				// The gt used by enqueue (from template or constructor)
-		int nodeCount		= 0;							// The number of nodes in the heap
-		int rootNodeCount	= 0;							// The number of root nodes in the root node list
-		DLN* headRootNode	= nullptr;						// A pointer to the head value 
+		bool (*gt) (const T& a, const T& b);				//The gt used by enqueue (from template or constructor)
+		int nodeCount		= 0;							//The number of nodes in the heap
+		int rootNodeCount	= 0;							//The number of root nodes in the root node list
+		DLN* headRootNode	= nullptr;						//A pointer to the head value 
 		
 		//Helper methods
-		void addRootNode(DLN* prevRootNode, DLN* toAdd);	// Adds a root node to the root list
-		void removeRootNode(DLN* toRemove);					// removes a root node from the root list
-		void consolidateRank();								// Ensures no two root nodes have the same rank
+		void addRootNode(DLN* prevRootNode, DLN* toAdd);	//Adds a root node to the root list
+		void removeRootNode(DLN* toRemove);					//removes a root node from the root list
+		void consolidateRank();								//Ensures no two root nodes have the same rank
 		DLN* copyFibTree(DLN* originalTree);
 		HN* copyFibBranch(HN* originalBranch);
 		void destroyTree(DLN* originalTree);
