@@ -141,8 +141,8 @@ class FibPriorityQueue {
 		void consolidateRank();								//Ensures no two root nodes have the same rank
 		DLN* copyFibTree(DLN* originalTree);
 		HN* copyFibBranch(HN* originalBranch);
-		void destroyTree(DLN* originalTree);
-		void destroyBranch(HN* originalBranch);
+		void destroyFibTree(DLN* originalTree);
+		void destroyFibBranch(HN* originalBranch);
 };
 
 
@@ -311,6 +311,19 @@ int FibPriorityQueue<T,tgt>::enqueue_all (const Iterable& i) {
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>& FibPriorityQueue<T,tgt>::operator = (const FibPriorityQueue<T,tgt>& rhs) {	
+	//check if it is assigning into itself
+	if(this == rhs) return *this;
+	
+	//delete current fib tree
+	destroyFibTree(headRootNode);
+	
+	//make copy of rhs fib tree
+	headRootNode = copyFibTree(rhs.headRootNode);
+	
+	//update current fib tree's info
+	nodeCount = rhs.nodeCount;
+	rootNodeCount = rhs.rootNodeCount;	
+	gt = rhs.gt;
 	return *this;
 }
 
@@ -439,7 +452,7 @@ typename FibPriorityQueue<T,tgt>::HN* FibPriorityQueue<T,tgt>::copyFibBranch(HN*
 }
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-void FibPriorityQueue<T,tgt>::destroyTree(DLN* originalTree) {
+void FibPriorityQueue<T,tgt>::destroyFibTree(DLN* originalTree) {
 	DLN* cursor = originalTree;
 
 	//traverse through doublely linked list 
@@ -458,7 +471,7 @@ void FibPriorityQueue<T,tgt>::destroyTree(DLN* originalTree) {
 }
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-void FibPriorityQueue<T,tgt>::destroyBranch(HN* originalBranch) {	
+void FibPriorityQueue<T,tgt>::destroyFibBranch(HN* originalBranch) {	
 	//recursively delete children before deleting node, else delete self
 	for(auto childNode : originalBranch->getChildNodes())	
 		destroyBranch(childNode);
