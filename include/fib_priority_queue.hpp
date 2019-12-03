@@ -11,7 +11,8 @@
 #include <utility>							//For std::swap function
 #include "array_stack.hpp"			//See operator <<
 #include "array_set.hpp"
-
+#include "hash_map.hpp"
+#include "array_queue.hpp"
 namespace ics {
 
 
@@ -330,7 +331,44 @@ FibPriorityQueue<T,tgt>& FibPriorityQueue<T,tgt>::operator = (const FibPriorityQ
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 bool FibPriorityQueue<T,tgt>::operator == (const FibPriorityQueue<T,tgt>& rhs) const {
-	return true;
+	//check if current comparing itself
+	if(this == rhs) return true;
+	
+	//check if either fib tree is empty
+	DLN* branchCursor = headRootNode;
+	if(branchCursor == nullptr) return rhs.headRootNode == branchCursor;
+	if(rhs.headRootNode == nullptr) return false;
+
+	//traverse through all branches and create hash map
+	HashMap<T,int> toCompare; 
+	ArrayQueue<HN*> heapNodeQueue;
+	HN* tempHeapNode= nullptr;
+	for(int i = 1; i  < rootNodeCount; i++, branchCursor = branchCursor->nextNode) {
+		heapNodeQueue.enqueue(branchCursor->heapNode);
+		while(!heapNodeQueue.empty()) {
+			tempHeapNode = heapNodeQueue.dequeue();
+			if(toCompare.has_key(tempHeapNode->getValue())) ++toCompare[tempHeapNode->getValue()];
+			else toCompare[tempHeapNode->getValue()] = 1;
+			heapNodeQueue.put_all(tempHeapNode->getChildNodes());
+		}
+	}
+
+	//traverse through rhs and check all the values in the hash map
+	branchCursor = rhs.headRootNode;
+	for(int i = 1; i < rhs.rootNodeCout; i++, branchCursor = branchCursor->nextNode) {
+		heapNodeQueue.enqueue(branchCursor->heapNode());
+		while(!heapNodeQueue.empty()) {
+			tempHeapNode = heapNodeQueue.dequeue(); 
+			if(toCompare.has_key(tempHeapNode->getValue())) --toCompare[tempHeapNode->getValue()];
+			//if it does not exist then they are not equivalent
+			else return false;
+			//erase if the occurances hit zero
+			if(!toCompare[tempHeapNode->getValue()]) toCompare.erase(tempHeapNode->getValue());
+			heapNodeQueue.put_all(tempHeapNode->getChildNodes());
+		}
+	}
+	//check if empty hash map
+	return toCompare.empty();
 }
 
 
