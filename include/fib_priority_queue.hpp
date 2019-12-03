@@ -133,7 +133,6 @@ class FibPriorityQueue {
 		
 		bool (*gt) (const T& a, const T& b);				// The gt used by enqueue (from template or constructor)
 		int nodeCount		= 0;							// The number of nodes in the heap
-		int rootNodeCount	= 0;							// The number of root nodes in the root node list
 		int modCount		= 0;							// For sensing concurrent modification
 		DLN* headRootNode	= nullptr;						// A pointer to the head value 
 
@@ -175,7 +174,7 @@ FibPriorityQueue<T,tgt>::FibPriorityQueue(bool (*cgt)(const T& a, const T& b))
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>::FibPriorityQueue(const FibPriorityQueue<T,tgt>& toCopy, bool (*cgt)(const T& a, const T& b))
-: gt(tgt != nullptr ? tgt : cgt), nodeCount(toCopy.nodeCount), rootNodeCount(toCopy.rootNodeCount) {
+: gt(tgt != nullptr ? tgt : cgt), nodeCount(toCopy.nodeCount) {
 	if(gt == nullptr)
 		gt = toCopy.gt;//throw TemplateFunctionError("FibPriorityQueue::copy constructor: neither specified");
 	if(tgt != nullptr && cgt != nullptr && tgt != cgt)
@@ -264,7 +263,6 @@ int FibPriorityQueue<T,tgt>::enqueue(const T& element) {
 		headRootNode = tempRootNode;
 	}
 
-	++rootNodeCount;
 	++nodeCount; 
 	++modCount;
 	return 1;
@@ -282,7 +280,6 @@ T FibPriorityQueue<T,tgt>::dequeue() {
 	for(HN* currentChild : headRootNode->getChildNodes()) {
 		tempRootNode = new DLN(currentChild);
 		addRootNode(headRootNode, tempRootNode);
-		++rootNodeCount;
 	}
 
 	DLN* oldHeadRootNode = headRootNode;
@@ -296,7 +293,6 @@ T FibPriorityQueue<T,tgt>::dequeue() {
 
 	delete oldHeadRootNode->heapNode;
 	delete oldHeadRootNode;
-	--rootNodeCount;
 	--nodeCount;
 	++modCount;
 
@@ -311,7 +307,6 @@ void FibPriorityQueue<T,tgt>::clear() {
 	destroyFibTree(headRootNode);
 	headRootNode = nullptr;
 	nodeCount = 0;
-	rootNodeCount = 0;
 	++modCount;
 }
 
@@ -345,7 +340,6 @@ FibPriorityQueue<T,tgt>& FibPriorityQueue<T,tgt>::operator = (const FibPriorityQ
 	
 	//update current fib tree's info
 	nodeCount = rhs.nodeCount;
-	rootNodeCount = rhs.rootNodeCount;	
 	gt = rhs.gt;
 	return *this;
 }
@@ -453,41 +447,38 @@ void FibPriorityQueue<T,tgt>::removeRootNode(DLN* toRemove){
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 void FibPriorityQueue<T,tgt>::consolidateRank() {
-	if(rootNodeCount < 1) return;
+	if(headRootNode == nullptr || headRootNode->nextNode == headRootNode) return;
 
 	int currentRank = -1;
-	int oldRootNodeCount = rootNodeCount;
+	T headValue = headRootNode->getValue();
+	DLN* oldHeadRootNode = headRootNode;
 	DLN* currentRootNode = headRootNode;
 	DLN* nextRootNode = headRootNode->nextNode;
 	DLN* rankArray[static_cast<int>(log2(nodeCount)) + 1] = { nullptr };
 
-	for(int rootNodeIndex = 0; rootNodeIndex < oldRootNodeCount; ++rootNodeIndex) {
-		if(gt(currentRootNode->getValue(), headRootNode->getValue())) {
-			headRootNode = currentRootNode;
-		}
-		
+	do {
 		currentRank = currentRootNode->getChildNodes().size();
 
 		// Keep iterating while there exist another root node with the same rank
 		while(rankArray[currentRank] != nullptr) {
-			if(gt(rankArray[currentRank]->getValue(), currentRootNode->getValue())) {
-				rankArray[currentRank]->addChild(currentRootNode->heapNode);
-				removeRootNode(currentRootNode);
-				delete currentRootNode;
-				currentRootNode = rankArray[currentRank];
-			} else {
-				currentRootNode->addChild(rankArray[currentRank]->heapNode);
-				removeRootNode(rankArray[currentRank]);
-				delete rankArray[currentRank];
+			if(gt(currentRootNode->getValue(), rankArray[currentRank]->getValue())) {
+				std::swap(rankArray[currentRank]->heapNode, currentRootNode->heapNode);
 			}
-			--rootNodeCount;
+
+			rankArray[currentRank]->addChild(currentRootNode->heapNode);
+			removeRootNode(currentRootNode);
+			delete currentRootNode;
+			currentRootNode = rankArray[currentRank];
 			rankArray[currentRank++] = nullptr;
 		}
+		if(!gt(headValue, currentRootNode->getValue())) {
+			headRootNode = currentRootNode;
+			headValue = currentRootNode->getValue();
+		}
 		rankArray[currentRank] = currentRootNode;
-
 		currentRootNode = nextRootNode;
 		nextRootNode = nextRootNode->nextNode;
-	}
+	} while(oldHeadRootNode != currentRootNode);
 		
 }
 
