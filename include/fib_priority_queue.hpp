@@ -131,18 +131,12 @@ class FibPriorityQueue {
 			DLN* nextNode;
 		};
 		
-<<<<<<< HEAD
-		bool (*gt) (const T& a, const T& b);				//The gt used by enqueue (from template or constructor)
-		int nodeCount		= 0;							//The number of nodes in the heap
-		int rootNodeCount	= 0;							//The number of root nodes in the root node list
-		DLN* headRootNode	= nullptr;						//A pointer to the head value 
-=======
 		bool (*gt) (const T& a, const T& b);				// The gt used by enqueue (from template or constructor)
 		int nodeCount		= 0;							// The number of nodes in the heap
 		int rootNodeCount	= 0;							// The number of root nodes in the root node list
 		int modCount		= 0;							// For sensing concurrent modification
 		DLN* headRootNode	= nullptr;						// A pointer to the head value 
->>>>>>> e45ab80c6a23021ec360a8f5427edc8b4cbc9e83
+
 		
 		//Helper methods
 		void addRootNode(DLN* prevRootNode, DLN* toAdd);	//Adds a root node to the root list
@@ -341,7 +335,7 @@ int FibPriorityQueue<T,tgt>::enqueue_all (const Iterable& i) {
 template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>& FibPriorityQueue<T,tgt>::operator = (const FibPriorityQueue<T,tgt>& rhs) {	
 	//check if it is assigning into itself
-	if(this == rhs) return *this;
+	if(this == &rhs) return *this;
 	
 	//delete current fib tree
 	destroyFibTree(headRootNode);
@@ -360,15 +354,25 @@ FibPriorityQueue<T,tgt>& FibPriorityQueue<T,tgt>::operator = (const FibPriorityQ
 template<class T, bool (*tgt)(const T& a, const T& b)>
 bool FibPriorityQueue<T,tgt>::operator == (const FibPriorityQueue<T,tgt>& rhs) const {
 	//check if current comparing itself
-	if(this == rhs) return true;
+	if(this == &rhs) return true;
 	
+	//check if gt function are the same
+	if(this->gt != rhs.gt) return false;
+	
+	if(nodeCount != rhs.nodeCount) return false;
+	FibPriorityQueue<T,tgt>::Iterator left = this->begin(), right = rhs.begin();
+	for(; left != this->end(); ++left, ++right)
+		if (*left != *right)
+			return false;
+	return true;		
+	/*
 	//check if either fib tree is empty
 	DLN* branchCursor = headRootNode;
 	if(branchCursor == nullptr) return rhs.headRootNode == branchCursor;
 	if(rhs.headRootNode == nullptr) return false;
 
 	//traverse through all branches and create hash map
-	HashMap<T,int> toCompare; 
+	HashMap<T, int, > toCompare; 
 	ArrayQueue<HN*> heapNodeQueue;
 	HN* tempHeapNode= nullptr;
 	for(int i = 1; i  < rootNodeCount; i++, branchCursor = branchCursor->nextNode) {
@@ -377,14 +381,14 @@ bool FibPriorityQueue<T,tgt>::operator == (const FibPriorityQueue<T,tgt>& rhs) c
 			tempHeapNode = heapNodeQueue.dequeue();
 			if(toCompare.has_key(tempHeapNode->getValue())) ++toCompare[tempHeapNode->getValue()];
 			else toCompare[tempHeapNode->getValue()] = 1;
-			heapNodeQueue.put_all(tempHeapNode->getChildNodes());
+			heapNodeQueue.enqueue_all(tempHeapNode->getChildNodes());
 		}
 	}
 
 	//traverse through rhs and check all the values in the hash map
 	branchCursor = rhs.headRootNode;
-	for(int i = 1; i < rhs.rootNodeCout; i++, branchCursor = branchCursor->nextNode) {
-		heapNodeQueue.enqueue(branchCursor->heapNode());
+	for(int i = 1; i < rhs.rootNodeCount; i++, branchCursor = branchCursor->nextNode) {
+		heapNodeQueue.enqueue(branchCursor->heapNode);
 		while(!heapNodeQueue.empty()) {
 			tempHeapNode = heapNodeQueue.dequeue(); 
 			if(toCompare.has_key(tempHeapNode->getValue())) --toCompare[tempHeapNode->getValue()];
@@ -392,11 +396,12 @@ bool FibPriorityQueue<T,tgt>::operator == (const FibPriorityQueue<T,tgt>& rhs) c
 			else return false;
 			//erase if the occurances hit zero
 			if(!toCompare[tempHeapNode->getValue()]) toCompare.erase(tempHeapNode->getValue());
-			heapNodeQueue.put_all(tempHeapNode->getChildNodes());
+			heapNodeQueue.enqueue_all(tempHeapNode->getChildNodes());
 		}
 	}
 	//check if empty hash map
 	return toCompare.empty();
+	*/
 }
 
 
