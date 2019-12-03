@@ -50,8 +50,8 @@ class FibPriorityQueue {
 		void clear	();
 
 		//Iterable class must support "for-each" loop: .begin()/.end() and prefix ++ on returned result
-		//template <class Iterable>
-		//int enqueue_all (const Iterable& i);
+		template <class Iterable>
+		int enqueue_all (const Iterable& i);
 
 
 		//Operators
@@ -63,12 +63,12 @@ class FibPriorityQueue {
 		friend std::ostream& operator << (std::ostream& outs, const FibPriorityQueue<T2,gt2>& pq);
 
 
-		/*
+		
 		class Iterator {
 			public:
 				//Private constructor called in begin/end, which are friends of FibPriorityQueue<T,tgt>
 				~Iterator();
-				T					 erase();
+//				T					 erase();
 				std::string str	() const;
 				FibPriorityQueue<T,tgt>::Iterator& operator ++ ();
 				FibPriorityQueue<T,tgt>::Iterator	operator ++ (int);
@@ -82,24 +82,24 @@ class FibPriorityQueue {
 				}
 
 				friend Iterator FibPriorityQueue<T,tgt>::begin () const;
-				friend Iterator FibPriorityQueue<T,tgt>::end	 () const;
+				friend Iterator FibPriorityQueue<T,tgt>::end   () const;
 
 			private:
 				//If can_erase is false, the value has been removed from "it" (++ does nothing)
-				FibPriorityQueue<T,tgt>	it;								 //copy of HPQ (from begin), to use as iterator via dequeue
-				FibPriorityQueue<T,tgt>* ref_pq;
-				int											 expected_mod_count;
-				bool											can_erase = true;
+				FibPriorityQueue<T,tgt>		it; //copy of HPQ (from begin), to use as iterator via dequeue
+				FibPriorityQueue<T,tgt>* 	ref_pq;
+				int							expected_mod_count;
+				bool						can_erase = true;
 
 				//Called in friends begin/end
 				//These constructors have different initializers (see it(...) in first one)
 				Iterator(FibPriorityQueue<T,tgt>* iterate_over, bool from_begin);		// Called by begin
-				Iterator(FibPriorityQueue<T,tgt>* iterate_over);										 // Called by end
+				Iterator(FibPriorityQueue<T,tgt>* iterate_over);						// Called by end
 		};
 
 
 		Iterator begin	() const;
-		Iterator end	() const;*/
+		Iterator end	() const;
 		
 	private:
 		class HN {
@@ -109,7 +109,7 @@ class FibPriorityQueue {
 			
 			int addChild(HN* newChildNode) { return childNodes.insert(newChildNode); }
 			ArraySet<HN*>& getChildNodes() { return childNodes; }
-			const T& getValue() { return value; }
+			T& getValue() { return value; }
 
 		private:	
 			ArraySet<HN*> childNodes;
@@ -124,17 +124,25 @@ class FibPriorityQueue {
 
 			int addChild(HN* newChildNode) { return heapNode->getChildNodes().insert(newChildNode); }
 			ArraySet<HN*>& getChildNodes() { return heapNode->getChildNodes(); }
-			const T& getValue() { return heapNode->getValue(); }
+			T& getValue() { return heapNode->getValue(); }
 						
 			HN* heapNode;
 	   		DLN* prevNode;
 			DLN* nextNode;
 		};
 		
+<<<<<<< HEAD
 		bool (*gt) (const T& a, const T& b);				//The gt used by enqueue (from template or constructor)
 		int nodeCount		= 0;							//The number of nodes in the heap
 		int rootNodeCount	= 0;							//The number of root nodes in the root node list
 		DLN* headRootNode	= nullptr;						//A pointer to the head value 
+=======
+		bool (*gt) (const T& a, const T& b);				// The gt used by enqueue (from template or constructor)
+		int nodeCount		= 0;							// The number of nodes in the heap
+		int rootNodeCount	= 0;							// The number of root nodes in the root node list
+		int modCount		= 0;							// For sensing concurrent modification
+		DLN* headRootNode	= nullptr;						// A pointer to the head value 
+>>>>>>> e45ab80c6a23021ec360a8f5427edc8b4cbc9e83
 		
 		//Helper methods
 		void addRootNode(DLN* prevRootNode, DLN* toAdd);	//Adds a root node to the root list
@@ -158,48 +166,57 @@ class FibPriorityQueue {
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>::~FibPriorityQueue() {
-	while(headRootNode != nullptr) dequeue();
+	destroyFibTree(headRootNode);
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>::FibPriorityQueue(bool (*cgt)(const T& a, const T& b))
 : gt(tgt != nullptr ? tgt : cgt) {
-	if (gt == nullptr)
+	if(gt == nullptr)
 		throw TemplateFunctionError("FibPriorityQueue::default constructor: neither specified");
-	if (tgt != nullptr && cgt != nullptr && tgt != cgt)
+	if(tgt != nullptr && cgt != nullptr && tgt != cgt)
 		throw TemplateFunctionError("FibPriorityQueue::default constructor: both specified and different");
 }
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>::FibPriorityQueue(const FibPriorityQueue<T,tgt>& toCopy, bool (*cgt)(const T& a, const T& b))
-: gt(tgt != nullptr ? tgt : cgt), nodeCount(toCopy.nodeCount) {
-	if (gt == nullptr)
+: gt(tgt != nullptr ? tgt : cgt), nodeCount(toCopy.nodeCount), rootNodeCount(toCopy.rootNodeCount) {
+	if(gt == nullptr)
 		gt = toCopy.gt;//throw TemplateFunctionError("FibPriorityQueue::copy constructor: neither specified");
-	if (tgt != nullptr && cgt != nullptr && tgt != cgt)
+	if(tgt != nullptr && cgt != nullptr && tgt != cgt)
 		throw TemplateFunctionError("FibPriorityQueue::copy constructor: both specified and different");
+
+	headRootNode = copyFibTree(toCopy.headRootNode);
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>::FibPriorityQueue(const std::initializer_list<T>& il, bool (*cgt)(const T& a, const T& b))
-: gt(tgt != nullptr ? tgt : cgt), nodeCount(il.size()) {
-	if (gt == nullptr)
+: gt(tgt != nullptr ? tgt : cgt) {
+	if(gt == nullptr)
 		throw TemplateFunctionError("FibPriorityQueue::initializer_list constructor: neither specified");
-	if (tgt != nullptr && cgt != nullptr && tgt != cgt)
+	if(tgt != nullptr && cgt != nullptr && tgt != cgt)
 		throw TemplateFunctionError("FibPriorityQueue::initializer_list constructor: both specified and different");
+
+	for(const T& element : il) enqueue(element);
+	consolidateRank();
+	modCount = 0;
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 template<class Iterable>
 FibPriorityQueue<T,tgt>::FibPriorityQueue(const Iterable& i, bool (*cgt)(const T& a, const T& b))
-: gt(tgt != nullptr ? tgt : cgt), nodeCount(i.size()) {
-	if (gt == nullptr)
+: gt(tgt != nullptr ? tgt : cgt) {
+	if(gt == nullptr)
 		throw TemplateFunctionError("FibPriorityQueue::Iterable constructor: neither specified");
-	if (tgt != nullptr && cgt != nullptr && tgt != cgt)
+	if(tgt != nullptr && cgt != nullptr && tgt != cgt)
 		throw TemplateFunctionError("FibPriorityQueue::Iterable constructor: both specified and different");
 
+	for(const T& element : i) enqueue(element);
+	consolidateRank();
+	modCount = 0;
 }
 
 
@@ -220,7 +237,7 @@ int FibPriorityQueue<T,tgt>::size() const {
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-T& FibPriorityQueue<T,tgt>::peek () const {
+T& FibPriorityQueue<T,tgt>::peek() const {
 	if(empty()) throw EmptyError("FibPriorityQueue::peek"); 
 	return headRootNode->getValue();
 }
@@ -245,7 +262,6 @@ int FibPriorityQueue<T,tgt>::enqueue(const T& element) {
 
 	if(headRootNode == nullptr) {
 		headRootNode = tempRootNode;
-		++rootNodeCount;
 	} else {
 		addRootNode(headRootNode, tempRootNode);
 	}
@@ -254,7 +270,9 @@ int FibPriorityQueue<T,tgt>::enqueue(const T& element) {
 		headRootNode = tempRootNode;
 	}
 
+	++rootNodeCount;
 	++nodeCount; 
+	++modCount;
 	return 1;
 }
 
@@ -270,6 +288,7 @@ T FibPriorityQueue<T,tgt>::dequeue() {
 	for(HN* currentChild : headRootNode->getChildNodes()) {
 		tempRootNode = new DLN(currentChild);
 		addRootNode(headRootNode, tempRootNode);
+		++rootNodeCount;
 	}
 
 	DLN* oldHeadRootNode = headRootNode;
@@ -277,14 +296,15 @@ T FibPriorityQueue<T,tgt>::dequeue() {
 	headRootNode = headRootNode->nextNode;
 	if(headRootNode == oldHeadRootNode) {
 		headRootNode = nullptr;
-		--rootNodeCount;
 	} else {
 		removeRootNode(oldHeadRootNode);
 	}
 
 	delete oldHeadRootNode->heapNode;
 	delete oldHeadRootNode;
+	--rootNodeCount;
 	--nodeCount;
+	++modCount;
 
 	consolidateRank();
 
@@ -294,17 +314,25 @@ T FibPriorityQueue<T,tgt>::dequeue() {
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 void FibPriorityQueue<T,tgt>::clear() {
-
+	destroyFibTree(headRootNode);
+	headRootNode = nullptr;
+	nodeCount = 0;
+	rootNodeCount = 0;
+	++modCount;
 }
 
-/*
+
 template<class T, bool (*tgt)(const T& a, const T& b)>
 template <class Iterable>
 int FibPriorityQueue<T,tgt>::enqueue_all (const Iterable& i) {
-	int count = 0;
-		return count;
+ 	int count = 0;
+ 	for (const T& v : i)
+		count += enqueue(v);
+
+	consolidateRank();
+	return count;
 }
-*/
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -387,7 +415,7 @@ std::ostream& operator << (std::ostream& outs, const FibPriorityQueue<T,tgt>& p)
 ////////////////////////////////////////////////////////////////////////////////
 //
 //Iterator constructors
-/*
+
 template<class T, bool (*tgt)(const T& a, const T& b)>
 auto FibPriorityQueue<T,tgt>::begin () const -> FibPriorityQueue<T,tgt>::Iterator {
 	return Iterator(const_cast<FibPriorityQueue<T,tgt>*>(this),true);
@@ -399,7 +427,7 @@ auto FibPriorityQueue<T,tgt>::end () const -> FibPriorityQueue<T,tgt>::Iterator 
 	return Iterator(const_cast<FibPriorityQueue<T,tgt>*>(this));	//Create empty pq (size == 0)
 }
 
-*/
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //Private helper methods
@@ -410,14 +438,12 @@ void FibPriorityQueue<T,tgt>::addRootNode(DLN* prevRootNode, DLN* toAdd){
 
 	toAdd->nextNode = prevRootNode->nextNode;
 	prevRootNode->nextNode = toAdd;
-	++rootNodeCount;
 }
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 void FibPriorityQueue<T,tgt>::removeRootNode(DLN* toRemove){
 	toRemove->prevNode->nextNode = toRemove->nextNode;
 	toRemove->nextNode->prevNode = toRemove->prevNode;
-	--rootNodeCount;
 }
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
@@ -449,6 +475,7 @@ void FibPriorityQueue<T,tgt>::consolidateRank() {
 				removeRootNode(rankArray[currentRank]);
 				delete rankArray[currentRank];
 			}
+			--rootNodeCount;
 			rankArray[currentRank++] = nullptr;
 		}
 		rankArray[currentRank] = currentRootNode;
@@ -485,7 +512,7 @@ typename FibPriorityQueue<T,tgt>::HN* FibPriorityQueue<T,tgt>::copyFibBranch(HN*
 	HN* copyBranch = new HN(originalBranch->getValue());
 	//make deep copies of the child nodes, else jump to return
 	for(auto childNode : originalBranch->getChildNodes())	
-		copyBranch.addChild(copyFibBranch(childNode));
+		copyBranch->addChild(copyFibBranch(childNode));
 	return copyBranch;
 }
 
@@ -496,7 +523,7 @@ void FibPriorityQueue<T,tgt>::destroyFibTree(DLN* originalTree) {
 	//traverse through doublely linked list 
 	while(cursor != nullptr) {		
 		//delete entire fib heap
-		destroyBranch(cursor->heapNode);
+		destroyFibBranch(cursor->heapNode);
 	
 		//delete root node
 		DLN* toDelete = cursor;
@@ -512,24 +539,24 @@ template<class T, bool (*tgt)(const T& a, const T& b)>
 void FibPriorityQueue<T,tgt>::destroyFibBranch(HN* originalBranch) {	
 	//recursively delete children before deleting node, else delete self
 	for(auto childNode : originalBranch->getChildNodes())	
-		destroyBranch(childNode);
+		destroyFibBranch(childNode);
 	//delete node
 	delete originalBranch;
 }
 ////////////////////////////////////////////////////////////////////////////////
 //
 //Iterator class definitions
-/*
+
 template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>::Iterator::Iterator(FibPriorityQueue<T,tgt>* iterate_over, bool tgt_nullptr)
-: it(*iterate_over,iterate_over->gt), ref_pq(iterate_over), expected_mod_count(iterate_over->mod_count) {
+: it(*iterate_over,iterate_over->gt), ref_pq(iterate_over), expected_mod_count(iterate_over->modCount) {
 	// Full priority queue; use copy constructor
 }
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>::Iterator::Iterator(FibPriorityQueue<T,tgt>* iterate_over)
-: it(iterate_over->gt), ref_pq(iterate_over), expected_mod_count(iterate_over->mod_count) {
+: it(iterate_over->gt), ref_pq(iterate_over), expected_mod_count(iterate_over->modCount) {
 	// Empty priority queue; use default constructor (from declaration of "it")
 }
 
@@ -538,7 +565,7 @@ template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>::Iterator::~Iterator()
 {}
 
-
+/*
 template<class T, bool (*tgt)(const T& a, const T& b)>
 T FibPriorityQueue<T,tgt>::Iterator::erase() {
 	if (expected_mod_count != ref_pq->mod_count)
@@ -562,7 +589,7 @@ T FibPriorityQueue<T,tgt>::Iterator::erase() {
 
 	expected_mod_count = ref_pq->mod_count;
 	return to_return;
-}
+}*/
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
@@ -575,7 +602,7 @@ std::string FibPriorityQueue<T,tgt>::Iterator::str() const {
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 auto FibPriorityQueue<T,tgt>::Iterator::operator ++ () -> FibPriorityQueue<T,tgt>::Iterator& {
-if (expected_mod_count != ref_pq->mod_count)
+if (expected_mod_count != ref_pq->modCount)
 		throw ConcurrentModificationError("FibPriorityQueue::Iterator::operator ++");
 
 	if (it.empty())
@@ -592,7 +619,7 @@ if (expected_mod_count != ref_pq->mod_count)
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 auto FibPriorityQueue<T,tgt>::Iterator::operator ++ (int) -> FibPriorityQueue<T,tgt>::Iterator {
-	if (expected_mod_count != ref_pq->mod_count)
+	if (expected_mod_count != ref_pq->modCount)
 		throw ConcurrentModificationError("FibPriorityQueue::Iterator::operator ++(int)");
 
 	if (it.empty())
@@ -613,7 +640,7 @@ bool FibPriorityQueue<T,tgt>::Iterator::operator == (const FibPriorityQueue<T,tg
 	const Iterator* rhsASI = dynamic_cast<const Iterator*>(&rhs);
 	if (rhsASI == 0)
 		throw IteratorTypeError("FibPriorityQueue::Iterator::operator ==");
-	if (expected_mod_count != ref_pq->mod_count)
+	if (expected_mod_count != ref_pq->modCount)
 		throw ConcurrentModificationError("FibPriorityQueue::Iterator::operator ==");
 	if (ref_pq != rhsASI->ref_pq)
 		throw ComparingDifferentIteratorsError("FibPriorityQueue::Iterator::operator ==");
@@ -628,7 +655,7 @@ bool FibPriorityQueue<T,tgt>::Iterator::operator != (const FibPriorityQueue<T,tg
 	const Iterator* rhsASI = dynamic_cast<const Iterator*>(&rhs);
 	if (rhsASI == 0)
 		throw IteratorTypeError("FibPriorityQueue::Iterator::operator !=");
-	if (expected_mod_count != ref_pq->mod_count)
+	if (expected_mod_count != ref_pq->modCount)
 		throw ConcurrentModificationError("FibPriorityQueue::Iterator::operator !=");
 	if (ref_pq != rhsASI->ref_pq)
 		throw ComparingDifferentIteratorsError("FibPriorityQueue::Iterator::operator !=");
@@ -639,7 +666,7 @@ bool FibPriorityQueue<T,tgt>::Iterator::operator != (const FibPriorityQueue<T,tg
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 T& FibPriorityQueue<T,tgt>::Iterator::operator *() const {
-	if (expected_mod_count != ref_pq->mod_count)
+	if (expected_mod_count != ref_pq->modCount)
 		throw ConcurrentModificationError("FibPriorityQueue::Iterator::operator *");
 	if (!can_erase || it.empty())
 		throw IteratorPositionIllegal("FibPriorityQueue::Iterator::operator * Iterator illegal: exhausted");
@@ -650,14 +677,14 @@ T& FibPriorityQueue<T,tgt>::Iterator::operator *() const {
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 T* FibPriorityQueue<T,tgt>::Iterator::operator ->() const {
-	if (expected_mod_count != ref_pq->mod_count)
+	if (expected_mod_count != ref_pq->modCount)
 		throw ConcurrentModificationError("FibPriorityQueue::Iterator::operator *");
 	if (!can_erase || it.empty())
 		throw IteratorPositionIllegal("FibPriorityQueue::Iterator::operator -> Iterator illegal: exhausted");
 
 	return &it.peek();
 }
-*/
+
 }
 
 #endif /* FIB_PRIORITY_QUEUE_HPP_ */
