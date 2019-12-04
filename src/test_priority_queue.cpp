@@ -54,7 +54,7 @@ template<class T>
 
 
 
-/*TEST_F(PriorityQueueTest, empty) {
+TEST_F(PriorityQueueTest, empty) {
   PriorityQueueTypeStr q;
   ASSERT_TRUE(q.empty());
 }
@@ -173,7 +173,7 @@ TEST_F(PriorityQueueTest, operator_eq_ne) {// == and !=
   ASSERT_EQ(q2,q2);
 }
 
-
+/*
 TEST_F(PriorityQueueTest, operator_stream_insert) {// <<
   std::ostringstream value;
   PriorityQueueTypeStr q;
@@ -205,55 +205,55 @@ TEST_F(PriorityQueueTest, operator_stream_insert) {// <<
   value << q;
   ASSERT_EQ("priority_queue[e,d,c,b,a]:highest", value.str());
 }
+*/
+
+TEST_F(PriorityQueueTest, enqueue_all) {
+  PriorityQueueTypeStr q,q1;
+  load(q1,"fcijbdegah");
+  q.enqueue_all(q1);
+  ASSERT_FALSE(q.empty());
+  ASSERT_EQ(10, q.size());
+  ASSERT_EQ(q,q1);
+}
 
 
-//TEST_F(PriorityQueueTest, enqueue_all) {
-//  PriorityQueueTypeStr q,q1;
-//  load(q1,"fcijbdegah");
-//  q.enqueue_all(q1);
-//  ASSERT_FALSE(q.empty());
-//  ASSERT_EQ(10, q.size());
-//  ASSERT_EQ(q,q1);
-//}
-//
-//
-//TEST_F(PriorityQueueTest, clear) {
-//  PriorityQueueTypeStr q;
-//  q.clear();
-//  ASSERT_TRUE(q.empty());
-//  ASSERT_EQ(0, q.size());
-//  ASSERT_THROW(q.peek(),ics::EmptyError);
-//
-//  load(q,"f");
-//  q.clear();
-//  ASSERT_TRUE(q.empty());
-//  ASSERT_EQ(0, q.size());
-//  ASSERT_THROW(q.peek(),ics::EmptyError);
-//
-//  load(q,"fc");
-//  q.clear();
-//  ASSERT_TRUE(q.empty());
-//  ASSERT_EQ(0, q.size());
-//  ASSERT_THROW(q.peek(),ics::EmptyError);
-//
-//  load(q,"fci");
-//  q.clear();
-//  ASSERT_TRUE(q.empty());
-//  ASSERT_EQ(0, q.size());
-//  ASSERT_THROW(q.peek(),ics::EmptyError);
-//
-//  load(q,"fcij");
-//  q.clear();
-//  ASSERT_TRUE(q.empty());
-//  ASSERT_EQ(0, q.size());
-//  ASSERT_THROW(q.peek(),ics::EmptyError);
-//
-//  load(q,"fcijb");
-//  q.clear();
-//  ASSERT_TRUE(q.empty());
-//  ASSERT_EQ(0, q.size());
-//  ASSERT_THROW(q.peek(),ics::EmptyError);
-//}
+TEST_F(PriorityQueueTest, clear) {
+  PriorityQueueTypeStr q;
+  q.clear();
+  ASSERT_TRUE(q.empty());
+  ASSERT_EQ(0, q.size());
+  ASSERT_THROW(q.peek(),ics::EmptyError);
+
+  load(q,"f");
+  q.clear();
+  ASSERT_TRUE(q.empty());
+  ASSERT_EQ(0, q.size());
+  ASSERT_THROW(q.peek(),ics::EmptyError);
+
+  load(q,"fc");
+  q.clear();
+  ASSERT_TRUE(q.empty());
+  ASSERT_EQ(0, q.size());
+  ASSERT_THROW(q.peek(),ics::EmptyError);
+
+  load(q,"fci");
+  q.clear();
+  ASSERT_TRUE(q.empty());
+  ASSERT_EQ(0, q.size());
+  ASSERT_THROW(q.peek(),ics::EmptyError);
+
+  load(q,"fcij");
+  q.clear();
+  ASSERT_TRUE(q.empty());
+  ASSERT_EQ(0, q.size());
+  ASSERT_THROW(q.peek(),ics::EmptyError);
+
+  load(q,"fcijb");
+  q.clear();
+  ASSERT_TRUE(q.empty());
+  ASSERT_EQ(0, q.size());
+  ASSERT_THROW(q.peek(),ics::EmptyError);
+}
 
 
 TEST_F(PriorityQueueTest, dequeue1) {
@@ -422,7 +422,7 @@ TEST_F(PriorityQueueTest, iterator_simple) {
   ASSERT_EQ(0,q.size());
 }
 
-
+/*
 TEST_F(PriorityQueueTest, iterator_erase) {
   std::string qvalues[] ={"a","b","c","d","e","f","g","h","i","j"};
   PriorityQueueTypeStr q;
@@ -580,7 +580,7 @@ TEST_F(PriorityQueueTest, template_constructors) {
   ASSERT_TRUE(unload(q_cc1,"abcdefghij"));
 }
 
-/*
+
 TEST_F(PriorityQueueTest, large_scale) {
   PriorityQueueTypeInt lq;
   ics::ArrayPriorityQueue<int,gt_int> lq_ref;
@@ -656,7 +656,7 @@ TEST_F(PriorityQueueTest, large_scale_speed) {
     }
   }
 }
-*/
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

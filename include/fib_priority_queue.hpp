@@ -297,7 +297,6 @@ T FibPriorityQueue<T,tgt>::dequeue() {
 	++modCount;
 
 	consolidateRank();
-
 	return headValue;
 }
 
@@ -451,35 +450,42 @@ void FibPriorityQueue<T,tgt>::consolidateRank() {
 
 	int currentRank = -1;
 	T headValue = headRootNode->getValue();
-	DLN* oldHeadRootNode = headRootNode;
+	DLN* stopRootNode = headRootNode;
 	DLN* currentRootNode = headRootNode;
-	DLN* nextRootNode = headRootNode->nextNode;
 	DLN* rankArray[static_cast<int>(log2(nodeCount)) + 1] = { nullptr };
 
+	//iterate through all root nodes
 	do {
 		currentRank = currentRootNode->getChildNodes().size();
 
-		// Keep iterating while there exist another root node with the same rank
+		//merge fib branches until branch has unique rank
 		while(rankArray[currentRank] != nullptr) {
-			if(gt(currentRootNode->getValue(), rankArray[currentRank]->getValue())) {
+			if(gt(rankArray[currentRank]->getValue(), currentRootNode->getValue())) {
 				std::swap(rankArray[currentRank]->heapNode, currentRootNode->heapNode);
 			}
 
-			rankArray[currentRank]->addChild(currentRootNode->heapNode);
-			removeRootNode(currentRootNode);
-			delete currentRootNode;
-			currentRootNode = rankArray[currentRank];
+			currentRootNode->addChild(rankArray[currentRank]->heapNode);
+
+			//move stopRootNode forward if it is going to be deleted
+			if(rankArray[currentRank] == stopRootNode) {
+				stopRootNode = stopRootNode->nextNode;
+			}
+
+			removeRootNode(rankArray[currentRank]);
+			delete rankArray[currentRank];
 			rankArray[currentRank++] = nullptr;
 		}
+
+		//update headRootNode to point to max value
 		if(!gt(headValue, currentRootNode->getValue())) {
 			headRootNode = currentRootNode;
 			headValue = currentRootNode->getValue();
 		}
+
+		//save unique fib branch in the rank array
 		rankArray[currentRank] = currentRootNode;
-		currentRootNode = nextRootNode;
-		nextRootNode = nextRootNode->nextNode;
-	} while(oldHeadRootNode != currentRootNode);
-		
+		currentRootNode = currentRootNode->nextNode;
+	} while(currentRootNode != stopRootNode);
 }
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
