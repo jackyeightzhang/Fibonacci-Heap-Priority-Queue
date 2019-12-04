@@ -173,7 +173,7 @@ TEST_F(PriorityQueueTest, operator_eq_ne) {// == and !=
   ASSERT_EQ(q2,q2);
 }
 
-/*
+
 TEST_F(PriorityQueueTest, operator_stream_insert) {// <<
   std::ostringstream value;
   PriorityQueueTypeStr q;
@@ -205,7 +205,7 @@ TEST_F(PriorityQueueTest, operator_stream_insert) {// <<
   value << q;
   ASSERT_EQ("priority_queue[e,d,c,b,a]:highest", value.str());
 }
-*/
+
 
 TEST_F(PriorityQueueTest, enqueue_all) {
   PriorityQueueTypeStr q,q1;

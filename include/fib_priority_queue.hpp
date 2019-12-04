@@ -239,7 +239,7 @@ T& FibPriorityQueue<T,tgt>::peek() const {
 template<class T, bool (*tgt)(const T& a, const T& b)>
 std::string FibPriorityQueue<T,tgt>::str() const {
 	std::ostringstream answer;
-	answer << "FibPriorityQueue" << std::endl;
+	answer << "PriorityQueue" << std::endl;
 	return answer.str();
 }
 
@@ -406,6 +406,16 @@ bool FibPriorityQueue<T,tgt>::operator != (const FibPriorityQueue<T,tgt>& rhs) c
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 std::ostream& operator << (std::ostream& outs, const FibPriorityQueue<T,tgt>& p) {	
+	outs << "priority_queue[";
+
+	if (!p.empty()) {
+		ArrayStack<T> temp(p);
+		outs << temp.pop();
+		for (int i = 1; i < p.nodeCount; ++i)
+			outs << "," << temp.pop();
+  	}
+
+	outs << "]:highest";
 	return outs;
 }
 
