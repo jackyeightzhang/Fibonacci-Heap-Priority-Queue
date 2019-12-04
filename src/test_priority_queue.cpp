@@ -11,11 +11,18 @@
 bool gt_string  (const std::string& a, const std::string& b) {return a < b;}
 bool gt_string2 (const std::string& a, const std::string& b) {return a > b;}
 bool gt_int     (const int& a, const int& b) {return a < b;}
+/*
+typedef ics::HeapPriorityQueue<std::string,gt_string>   PriorityQueueTypeStr;
+typedef ics::HeapPriorityQueue<std::string,gt_string2>  PriorityQueueTypeStrR;
+typedef ics::HeapPriorityQueue<int,gt_int>              PriorityQueueTypeInt;
+typedef ics::HeapPriorityQueue<std::string>             PriorityQueueTypeNone;
+*/
 
 typedef ics::FibPriorityQueue<std::string,gt_string>   PriorityQueueTypeStr;
 typedef ics::FibPriorityQueue<std::string,gt_string2>  PriorityQueueTypeStrR;
 typedef ics::FibPriorityQueue<int,gt_int>              PriorityQueueTypeInt;
 typedef ics::FibPriorityQueue<std::string>             PriorityQueueTypeNone;
+
 
 int test_size  = ics::prompt_int ("Enter large scale test size");
 int trace      = ics::prompt_bool("Trace large scale test",false);
