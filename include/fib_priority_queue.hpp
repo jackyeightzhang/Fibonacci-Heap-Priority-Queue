@@ -250,10 +250,11 @@ std::string FibPriorityQueue<T,tgt>::str() const {
 		while(currentRootNode != headRootNode->prevNode) {
 			answer << " ├─ ";
 			printFibBranch(answer, prefix, currentRootNode->heapNode);
+			answer << prefix << std::endl;
 			currentRootNode = currentRootNode->nextNode;
 		}
 		answer << " └─ ";
-		prefix[0] = '\0';
+		prefix = "  ";
 		printFibBranch(answer, prefix, currentRootNode->heapNode);
 	}
 	answer << "(nodeCount=" << nodeCount << ",modCount=" << modCount << "):" << std::endl;
@@ -575,39 +576,41 @@ void FibPriorityQueue<T,tgt>::destroyFibBranch(HN* originalBranch) {
 template<class T, bool (*tgt)(const T& a, const T& b)>
 void FibPriorityQueue<T,tgt>::printFibBranch(std::ostream& outs, std::string& prefix, HN* currentHeapNode) const {
 	int childCount = currentHeapNode->getChildNodes().size();
+
 	if(childCount == 0) {
 		outs << currentHeapNode->getValue() << std::endl;
-		if(prefix[0] != '\0') {
-			outs << prefix << std::endl;
-		}
 		return;
 	}
 
-	int padding = 0;
+	int padSize = 0;
 	std::string newPrefix;
+	std::string padding;
 
-	padding -= outs.tellp();
+	padSize -= outs.tellp();
 	outs << currentHeapNode->getValue();
-	padding += outs.tellp();
-	prefix += "  ";
-	prefix += std::string(padding, ' ');
+	padSize += outs.tellp();
 
+	padding = std::string(2 + padSize, ' ');
 	newPrefix = prefix;
+	newPrefix += padding;
 
 	if(childCount == 1) {
+		newPrefix += "   ";
 		outs << " ─── ";
 		printFibBranch(outs, prefix, *(currentHeapNode->getChildNodes().begin()));
 	}
 	else {
-		ArrayStack<HN*> temp(currentHeapNode->getChildNodes());
 		newPrefix += "  │";
+		ArrayStack<HN*> temp(currentHeapNode->getChildNodes());
 		outs << " ─┬─ ";
 		printFibBranch(outs, newPrefix, temp.pop());
 		while(temp.size() > 1){
-			outs << prefix << "  ├─ ";
+			outs << prefix << padding << "  │" << std::endl;
+			outs << prefix << padding << "  ├─ ";
 			printFibBranch(outs, newPrefix, temp.pop());
 		}
-		outs << prefix << "  └─ ";
+		outs << prefix << padding << "  │" << std::endl;
+		outs << prefix << padding << "  └─ ";
 		printFibBranch(outs, prefix, temp.pop());
 	}
 }
