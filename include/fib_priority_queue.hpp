@@ -244,17 +244,17 @@ std::string FibPriorityQueue<T,tgt>::str() const {
 	answer << "FibPriorityQueue:" << std::endl;
 	answer << "[R]" << std::endl;
 
-	std::string prefix = " │";
+	std::string prefix = " │  ";
 	if(headRootNode != nullptr) {
 		DLN* currentRootNode = headRootNode;
 		while(currentRootNode != headRootNode->prevNode) {
 			answer << " ├─ ";
 			printFibBranch(answer, prefix, currentRootNode->heapNode);
-			answer << prefix << std::endl;
+			answer << " │" << std::endl;
 			currentRootNode = currentRootNode->nextNode;
 		}
 		answer << " └─ ";
-		prefix = "  ";
+		prefix = "    ";
 		printFibBranch(answer, prefix, currentRootNode->heapNode);
 	}
 	answer << "(nodeCount=" << nodeCount << ",modCount=" << modCount << "):" << std::endl;
@@ -590,17 +590,17 @@ void FibPriorityQueue<T,tgt>::printFibBranch(std::ostream& outs, std::string& pr
 	outs << currentHeapNode->getValue();
 	padSize += outs.tellp();
 
-	padding = std::string(2 + padSize, ' ');
+	padding = std::string(padSize, ' ');
 	newPrefix = prefix;
 	newPrefix += padding;
 
 	if(childCount == 1) {
-		newPrefix += "   ";
+		newPrefix += "     ";
 		outs << " ─── ";
 		printFibBranch(outs, prefix, *(currentHeapNode->getChildNodes().begin()));
 	}
 	else {
-		newPrefix += "  │";
+		newPrefix += "  │  ";
 		ArrayStack<HN*> temp(currentHeapNode->getChildNodes());
 		outs << " ─┬─ ";
 		printFibBranch(outs, newPrefix, temp.pop());
