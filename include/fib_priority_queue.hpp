@@ -8,7 +8,7 @@
 #include <sstream>
 #include <initializer_list>
 #include "courselib/ics_exceptions.hpp"
-#include <utility>							//For std::swap function
+#include <utility>					//For std::swap function
 #include "array_stack.hpp"			//See operator <<
 #include "array_set.hpp"
 #include "hash_map.hpp"
@@ -138,13 +138,15 @@ class FibPriorityQueue {
 
 		
 		//Helper methods
-		void addRootNode(DLN* prevRootNode, DLN* toAdd);	//Adds a root node to the root list
+		void addRootNode(DLN* nextRootNode, DLN* toAdd);	//Adds a root node to the root list
 		void removeRootNode(DLN* toRemove);					//removes a root node from the root list
 		void consolidateRank();								//Ensures no two root nodes have the same rank
 		DLN* copyFibTree(DLN* originalTree);
 		HN* copyFibBranch(HN* originalBranch);
 		void destroyFibTree(DLN* originalTree);
 		void destroyFibBranch(HN* originalBranch);
+		
+		void printFibBranch(std::ostream& outs, std::string& prefix, HN* currentHeapNode) const;
 };
 
 
@@ -194,6 +196,7 @@ FibPriorityQueue<T,tgt>::FibPriorityQueue(const std::initializer_list<T>& il, bo
 
 	for(const T& element : il) enqueue(element);
 	consolidateRank();
+	std::cout << str() << std::endl;
 	modCount = 0;
 }
 
@@ -239,7 +242,20 @@ T& FibPriorityQueue<T,tgt>::peek() const {
 template<class T, bool (*tgt)(const T& a, const T& b)>
 std::string FibPriorityQueue<T,tgt>::str() const {
 	std::ostringstream answer;
-	answer << "PriorityQueue" << std::endl;
+	answer << "FibPriorityQueue:" << std::endl;
+	answer << "[R]" << std::endl;
+
+	std::string prefix = " │";
+	DLN* currentRootNode = headRootNode;
+	while(currentRootNode != headRootNode->prevNode) {
+		answer << " ├─ ";
+		printFibBranch(answer, prefix, currentRootNode->heapNode);
+		currentRootNode = currentRootNode->nextNode;
+	}
+	answer << " └─ ";
+	prefix[0] = '\0';
+	printFibBranch(answer, prefix, currentRootNode->heapNode);
+	answer << "(nodeCount=" << nodeCount << ",modCount=" << modCount << "):" << std::endl;
 	return answer.str();
 }
 
@@ -316,7 +332,6 @@ int FibPriorityQueue<T,tgt>::enqueue_all (const Iterable& i) {
  	int count = 0;
  	for (const T& v : i)
 		count += enqueue(v);
-
 	consolidateRank();
 	return count;
 }
@@ -440,12 +455,12 @@ auto FibPriorityQueue<T,tgt>::end () const -> FibPriorityQueue<T,tgt>::Iterator 
 //
 //Private helper methods
 template<class T, bool (*tgt)(const T& a, const T& b)>
-void FibPriorityQueue<T,tgt>::addRootNode(DLN* prevRootNode, DLN* toAdd){
-	prevRootNode->nextNode->prevNode = toAdd;
-	toAdd->prevNode = prevRootNode;
+void FibPriorityQueue<T,tgt>::addRootNode(DLN* nextRootNode, DLN* toAdd){
+	nextRootNode->prevNode->nextNode = toAdd;
+	toAdd->nextNode = nextRootNode;
 
-	toAdd->nextNode = prevRootNode->nextNode;
-	prevRootNode->nextNode = toAdd;
+	toAdd->prevNode = nextRootNode->prevNode;
+	nextRootNode->prevNode = toAdd;
 }
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
@@ -554,6 +569,46 @@ void FibPriorityQueue<T,tgt>::destroyFibBranch(HN* originalBranch) {
 		destroyFibBranch(childNode);
 	//delete node
 	delete originalBranch;
+}
+
+template<class T, bool (*tgt)(const T& a, const T& b)>
+void FibPriorityQueue<T,tgt>::printFibBranch(std::ostream& outs, std::string& prefix, HN* currentHeapNode) const {
+	int childCount = currentHeapNode->getChildNodes().size();
+	if(childCount == 0) {
+		outs << currentHeapNode->getValue() << std::endl;
+		if(prefix[0] != '\0') {
+			outs << prefix << std::endl;
+		}
+		return;
+	}
+
+	int padding = 0;
+	std::string newPrefix;
+
+	padding -= outs.tellp();
+	outs << currentHeapNode->getValue();
+	padding += outs.tellp();
+	prefix += "  ";
+	prefix += std::string(padding, ' ');
+
+	newPrefix = prefix;
+
+	if(childCount == 1) {
+		outs << " ─── ";
+		printFibBranch(outs, prefix, *(currentHeapNode->getChildNodes().begin()));
+	}
+	else {
+		ArrayStack<HN*> temp(currentHeapNode->getChildNodes());
+		newPrefix += "  │";
+		outs << " ─┬─ ";
+		printFibBranch(outs, newPrefix, temp.pop());
+		while(temp.size() > 1){
+			outs << prefix << "  ├─ ";
+			printFibBranch(outs, newPrefix, temp.pop());
+		}
+		outs << prefix << "  └─ ";
+		printFibBranch(outs, prefix, temp.pop());
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////
 //
