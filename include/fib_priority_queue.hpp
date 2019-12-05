@@ -597,7 +597,7 @@ void FibPriorityQueue<T,tgt>::printFibBranch(std::ostream& outs, std::string& pr
 	if(childCount == 1) {
 		newPrefix += "     ";
 		outs << " ─── ";
-		printFibBranch(outs, prefix, *(currentHeapNode->getChildNodes().begin()));
+		printFibBranch(outs, newPrefix, *(currentHeapNode->getChildNodes().begin()));
 	}
 	else {
 		newPrefix += "  │  ";
