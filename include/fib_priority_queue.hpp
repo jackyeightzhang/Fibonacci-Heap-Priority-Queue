@@ -107,9 +107,9 @@ class FibPriorityQueue {
 			HN(const HN& toCopy)	: value(toCopy.value) { childNodes = toCopy.childNodes; }
 			HN(const T& value)		: value(value) {}
 			
-			int addChild(HN* newChildNode) { return childNodes.insert(newChildNode); }
-			ArraySet<HN*>& getChildNodes() { return childNodes; }
-			T& getValue() { return value; }
+			inline int addChild(HN* newChildNode) { return childNodes.insert(newChildNode); }
+			inline ArraySet<HN*>& getChildNodes() { return childNodes; }
+			inline T& getValue() { return value; }
 
 		private:	
 			ArraySet<HN*> childNodes;
@@ -122,9 +122,9 @@ class FibPriorityQueue {
 			DLN(HN* heapNode)		: heapNode(heapNode) { prevNode = this; nextNode = this; }	
 
 
-			int addChild(HN* newChildNode) { return heapNode->getChildNodes().insert(newChildNode); }
-			ArraySet<HN*>& getChildNodes() { return heapNode->getChildNodes(); }
-			T& getValue() { return heapNode->getValue(); }
+			inline int addChild(HN* newChildNode) { return heapNode->getChildNodes().insert(newChildNode); }
+			inline ArraySet<HN*>& getChildNodes() { return heapNode->getChildNodes(); }
+			inline T& getValue() { return heapNode->getValue(); }
 						
 			HN* heapNode;
 	   		DLN* prevNode;
@@ -138,9 +138,9 @@ class FibPriorityQueue {
 
 		
 		//Helper methods
-		void addRootNode(DLN* nextRootNode, DLN* toAdd);	//Adds a root node to the root list
-		void removeRootNode(DLN* toRemove);					//removes a root node from the root list
-		void consolidateRank();								//Ensures no two root nodes have the same rank
+		inline void addRootNode(DLN* nextRootNode, DLN* toAdd);		//Adds a root node to the root list
+		inline void removeRootNode(DLN* toRemove);					//removes a root node from the root list
+		void consolidateRank();										//Ensures no two root nodes have the same rank
 		DLN* copyFibTree(DLN* originalTree);
 		HN* copyFibBranch(HN* originalBranch);
 		void destroyFibTree(DLN* originalTree);
@@ -196,7 +196,6 @@ FibPriorityQueue<T,tgt>::FibPriorityQueue(const std::initializer_list<T>& il, bo
 
 	for(const T& element : il) enqueue(element);
 	consolidateRank();
-	std::cout << str() << std::endl;
 	modCount = 0;
 }
 
@@ -246,15 +245,17 @@ std::string FibPriorityQueue<T,tgt>::str() const {
 	answer << "[R]" << std::endl;
 
 	std::string prefix = " │";
-	DLN* currentRootNode = headRootNode;
-	while(currentRootNode != headRootNode->prevNode) {
-		answer << " ├─ ";
+	if(headRootNode != nullptr) {
+		DLN* currentRootNode = headRootNode;
+		while(currentRootNode != headRootNode->prevNode) {
+			answer << " ├─ ";
+			printFibBranch(answer, prefix, currentRootNode->heapNode);
+			currentRootNode = currentRootNode->nextNode;
+		}
+		answer << " └─ ";
+		prefix[0] = '\0';
 		printFibBranch(answer, prefix, currentRootNode->heapNode);
-		currentRootNode = currentRootNode->nextNode;
 	}
-	answer << " └─ ";
-	prefix[0] = '\0';
-	printFibBranch(answer, prefix, currentRootNode->heapNode);
 	answer << "(nodeCount=" << nodeCount << ",modCount=" << modCount << "):" << std::endl;
 	return answer.str();
 }
@@ -455,7 +456,7 @@ auto FibPriorityQueue<T,tgt>::end () const -> FibPriorityQueue<T,tgt>::Iterator 
 //
 //Private helper methods
 template<class T, bool (*tgt)(const T& a, const T& b)>
-void FibPriorityQueue<T,tgt>::addRootNode(DLN* nextRootNode, DLN* toAdd){
+inline void FibPriorityQueue<T,tgt>::addRootNode(DLN* nextRootNode, DLN* toAdd){
 	nextRootNode->prevNode->nextNode = toAdd;
 	toAdd->nextNode = nextRootNode;
 
@@ -464,7 +465,7 @@ void FibPriorityQueue<T,tgt>::addRootNode(DLN* nextRootNode, DLN* toAdd){
 }
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-void FibPriorityQueue<T,tgt>::removeRootNode(DLN* toRemove){
+inline void FibPriorityQueue<T,tgt>::removeRootNode(DLN* toRemove){
 	toRemove->prevNode->nextNode = toRemove->nextNode;
 	toRemove->nextNode->prevNode = toRemove->prevNode;
 }
