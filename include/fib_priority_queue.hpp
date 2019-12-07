@@ -103,15 +103,18 @@ class FibPriorityQueue {
 	private:
 		class HN {
 		public:
-			HN(const HN& toCopy)	: value(toCopy.value) { childNodes = toCopy.childNodes; }
-			HN(const T& value)		: value(value) {}
+			HN(const HN& toCopy)	: marked(toCopy.marked), value(toCopy.value) { childNodes = toCopy.childNodes; }
+			HN(const T& value)		: marked(false), value(value) { parentNode = this; }
 			
 			inline int addChild(HN* newChildNode) { return childNodes.insert(newChildNode); }
 			inline ArraySet<HN*>& getChildNodes() { return childNodes; }
 			inline T& getValue() { return value; }
 			inline bool isMarked() { return marked; }
+			inline bool toggleMarked() { return marked = !marked; }	
 			inline HN* getParent() { return parentNode; }
-
+			inline int setParent(HN* parent) { parentNode = parent; return 1;}
+			//dequeue we have to change parent,  
+		
 		private:	
 			HN* parentNode;
 			ArraySet<HN*> childNodes;
@@ -128,7 +131,7 @@ class FibPriorityQueue {
 			inline int addChild(HN* newChildNode) { return heapNode->getChildNodes().insert(newChildNode); }
 			inline ArraySet<HN*>& getChildNodes() { return heapNode->getChildNodes(); }
 			inline T& getValue() { return heapNode->getValue(); }
-						
+		
 			HN* heapNode;
 	   		DLN* prevNode;
 			DLN* nextNode;
@@ -145,7 +148,7 @@ class FibPriorityQueue {
 		inline void removeRootNode(DLN* toRemove);					//removes a root node from the root list
 		void consolidateRank();										//Ensures no two root nodes have the same rank
 		DLN* copyFibTree(DLN* originalTree);
-		HN* copyFibBranch(HN* originalBranch);
+		HN* copyFibBranch(HN* originalBranch, HN* branchParent);
 		void destroyFibTree(DLN* originalTree);
 		void destroyFibBranch(HN* originalBranch);
 		
@@ -277,7 +280,7 @@ int FibPriorityQueue<T,tgt>::enqueue(const T& element) {
 	if(headRootNode == nullptr) {
 		headRootNode = tempRootNode;
 	} else {
-		addRootNode(headRootNode, tempRootNode);
+		addRootNode(headRootNode, tempRootNode);	
 	}
 
 	if(gt(tempRootNode->getValue(), headRootNode->getValue())) {
@@ -299,12 +302,12 @@ T FibPriorityQueue<T,tgt>::dequeue() {
 
 	DLN* tempRootNode = nullptr;
 	for(HN* currentChild : headRootNode->getChildNodes()) {
+		currentChild->setParent(currentChild);
 		tempRootNode = new DLN(currentChild);
 		addRootNode(headRootNode, tempRootNode);
 	}
 
 	DLN* oldHeadRootNode = headRootNode;
-
 	headRootNode = headRootNode->nextNode;
 	if(headRootNode == oldHeadRootNode) {
 		headRootNode = nullptr;
@@ -329,7 +332,6 @@ void FibPriorityQueue<T,tgt>::clear() {
 	nodeCount = 0;
 	++modCount;
 }
-
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
 template <class Iterable>
@@ -495,6 +497,7 @@ void FibPriorityQueue<T,tgt>::consolidateRank() {
 			}
 
 			currentRootNode->addChild(rankArray[currentRank]->heapNode);
+			rankArray[currentRank]->heapNode->setParent(currentRootNode->heapNode);
 
 			//move stopRootNode forward if it is going to be deleted
 			if(rankArray[currentRank] == stopRootNode) {
@@ -524,13 +527,13 @@ typename FibPriorityQueue<T,tgt>::DLN* FibPriorityQueue<T,tgt>::copyFibTree(DLN*
 	if(cursor == nullptr) return cursor;
 	//add headRootNode in order to use addRootNode
 	//also make a deep copy of the fib branch and connect it to the root
-	DLN* returnHeadRootNode = new DLN(copyFibBranch(cursor->heapNode));	
+	DLN* returnHeadRootNode = new DLN(copyFibBranch(cursor->heapNode,cursor->heapNode));	
 	cursor = cursor->nextNode;
 
 	//traverse through every root node and add to the doublely linked list copy
 	while(cursor != originalTree)	{	
 		//make a deep copy of fib branch at cursor and connect to root
-		DLN* tempRootNode = new DLN(copyFibBranch(cursor->heapNode));
+		DLN* tempRootNode = new DLN(copyFibBranch(cursor->heapNode, cursor->heapNode));
 		//connect this hanging root node to the doublely linked list
 		addRootNode(returnHeadRootNode, tempRootNode);
 		cursor = cursor->nextNode;
@@ -539,12 +542,13 @@ typename FibPriorityQueue<T,tgt>::DLN* FibPriorityQueue<T,tgt>::copyFibTree(DLN*
 }
 	
 template<class T, bool (*tgt)(const T& a, const T& b)>
-typename FibPriorityQueue<T,tgt>::HN* FibPriorityQueue<T,tgt>::copyFibBranch(HN* originalBranch) {
+typename FibPriorityQueue<T,tgt>::HN* FibPriorityQueue<T,tgt>::copyFibBranch(HN* originalBranch, HN* branchParent) {
 	//traverse recursively through fib branch
 	HN* copyBranch = new HN(originalBranch->getValue());
+	if(originalBranch != branchParent) copyBranch->setParent(branchParent);
 	//make deep copies of the child nodes, else jump to return
 	for(auto childNode : originalBranch->getChildNodes())	
-		copyBranch->addChild(copyFibBranch(childNode));
+		copyBranch->addChild(copyFibBranch(childNode, copyBranch));
 	return copyBranch;
 }
 
