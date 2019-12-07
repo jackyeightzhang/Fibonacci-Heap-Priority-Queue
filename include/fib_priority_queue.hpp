@@ -28,7 +28,6 @@ class FibPriorityQueue {
 		~FibPriorityQueue();
 
 		FibPriorityQueue(bool (*cgt)(const T& a, const T& b) = nullptr);
-		explicit FibPriorityQueue(int initial_length, bool (*cgt)(const T& a, const T& b));
 		FibPriorityQueue(const FibPriorityQueue<T,tgt>& to_copy, bool (*cgt)(const T& a, const T& b) = nullptr);
 		explicit FibPriorityQueue(const std::initializer_list<T>& il, bool (*cgt)(const T& a, const T& b) = nullptr);
 

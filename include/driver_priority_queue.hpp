@@ -162,7 +162,11 @@ class DriverPriorityQueue {
         }
 
         else if (command == "l{") {
-          q = PriorityQueueType({"c","b","d","e","a"});
+          q.enqueue("c");
+          q.enqueue("b");
+          q.enqueue("d");
+          q.enqueue("e");
+          q.enqueue("a");
         }
 
         else if (command == "it")
