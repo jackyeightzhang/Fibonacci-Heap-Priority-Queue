@@ -109,10 +109,14 @@ class FibPriorityQueue {
 			inline int addChild(HN* newChildNode) { return childNodes.insert(newChildNode); }
 			inline ArraySet<HN*>& getChildNodes() { return childNodes; }
 			inline T& getValue() { return value; }
+			inline bool isMarked() { return marked; }
+			inline HN* getParent() { return parentNode; }
 
 		private:	
+			HN* parentNode;
 			ArraySet<HN*> childNodes;
-	    	T value;			
+	    	bool marked;
+			T value;			
 		};
 
 		class DLN {
