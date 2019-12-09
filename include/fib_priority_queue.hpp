@@ -60,14 +60,12 @@ class FibPriorityQueue {
 
 		template<class T2, bool (*gt2)(const T2& a, const T2& b)>
 		friend std::ostream& operator << (std::ostream& outs, const FibPriorityQueue<T2,gt2>& pq);
-
-
 		
 		class Iterator {
 			public:
 				//Private constructor called in begin/end, which are friends of FibPriorityQueue<T,tgt>
 				~Iterator();
-//				T					 erase();
+				T			erase();
 				std::string str	() const;
 				FibPriorityQueue<T,tgt>::Iterator& operator ++ ();
 				FibPriorityQueue<T,tgt>::Iterator	operator ++ (int);
@@ -141,15 +139,18 @@ class FibPriorityQueue {
 
 		
 		//Helper methods
-		inline void addRootNode(DLN* nextRootNode, DLN* toAdd);		//Adds a root node to the root list
-		inline void removeRootNode(DLN* toRemove);					//removes a root node from the root list
-		void consolidateRank();										//Ensures no two root nodes have the same rank
-		DLN* copyFibTree(DLN* originalTree);
-		HN* copyFibBranch(HN* originalBranch);
-		void destroyFibTree(DLN* originalTree);
-		void destroyFibBranch(HN* originalBranch);
-		
-		void printFibBranch(std::ostream& outs, std::string& prefix, HN* currentHeapNode) const;
+		inline void addRootNode(DLN* nextRootNode, DLN* toAdd);			//Adds a root node to the root list
+		inline void addRootNode(DLN* nextRootNode, DLN* toAdd) const;	//Adds a root node to the root list
+		inline void removeRootNode(DLN* toRemove);						//removes a root node from the root list
+		void consolidateRank();											//Ensures no two root nodes have the same rank
+		DLN*	copyFibTree(DLN* originalTree) const;
+		HN*		copyFibBranch(HN* originalBranch) const;
+		void	destroyFibTree(DLN* originalTree);
+		void	destroyFibBranch(HN* originalBranch);
+		HN*		findInFibTree(DLN* originalTree, const T& value) const;
+		HN*		findInFibBranch(HN* originalBranch, const T& value) const;
+
+		void 	printFibBranch(std::ostream& outs, std::string& prefix, HN* currentHeapNode) const;
 };
 
 
@@ -460,7 +461,16 @@ auto FibPriorityQueue<T,tgt>::end () const -> FibPriorityQueue<T,tgt>::Iterator 
 //
 //Private helper methods
 template<class T, bool (*tgt)(const T& a, const T& b)>
-inline void FibPriorityQueue<T,tgt>::addRootNode(DLN* nextRootNode, DLN* toAdd){
+inline void FibPriorityQueue<T,tgt>::addRootNode(DLN* nextRootNode, DLN* toAdd) {
+	nextRootNode->prevNode->nextNode = toAdd;
+	toAdd->nextNode = nextRootNode;
+
+	toAdd->prevNode = nextRootNode->prevNode;
+	nextRootNode->prevNode = toAdd;
+}
+
+template<class T, bool (*tgt)(const T& a, const T& b)>
+inline void FibPriorityQueue<T,tgt>::addRootNode(DLN* nextRootNode, DLN* toAdd) const {
 	nextRootNode->prevNode->nextNode = toAdd;
 	toAdd->nextNode = nextRootNode;
 
@@ -519,7 +529,7 @@ void FibPriorityQueue<T,tgt>::consolidateRank() {
 }
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
-typename FibPriorityQueue<T,tgt>::DLN* FibPriorityQueue<T,tgt>::copyFibTree(DLN* originalTree) {
+typename FibPriorityQueue<T,tgt>::DLN* FibPriorityQueue<T,tgt>::copyFibTree(DLN* originalTree) const {
 	DLN* cursor = originalTree;
 	if(cursor == nullptr) return cursor;
 	//add headRootNode in order to use addRootNode
@@ -539,7 +549,7 @@ typename FibPriorityQueue<T,tgt>::DLN* FibPriorityQueue<T,tgt>::copyFibTree(DLN*
 }
 	
 template<class T, bool (*tgt)(const T& a, const T& b)>
-typename FibPriorityQueue<T,tgt>::HN* FibPriorityQueue<T,tgt>::copyFibBranch(HN* originalBranch) {
+typename FibPriorityQueue<T,tgt>::HN* FibPriorityQueue<T,tgt>::copyFibBranch(HN* originalBranch) const {
 	//traverse recursively through fib branch
 	HN* copyBranch = new HN(originalBranch->getValue());
 	//make deep copies of the child nodes, else jump to return
@@ -574,6 +584,40 @@ void FibPriorityQueue<T,tgt>::destroyFibBranch(HN* originalBranch) {
 		destroyFibBranch(childNode);
 	//delete node
 	delete originalBranch;
+}
+
+template<class T, bool (*tgt)(const T& a, const T& b)>
+typename FibPriorityQueue<T,tgt>::HN* FibPriorityQueue<T,tgt>::findInFibTree(DLN* originalTree, const T& value) const {
+	DLN* cursor = originalTree;
+	HN* heapNode = nullptr;
+	if(cursor == nullptr) return nullptr;
+
+	//traverse through every root node
+	do {
+		heapNode = findInFibBranch(cursor->heapNode, value);
+		if(heapNode != nullptr)
+			return heapNode;
+
+		cursor = cursor->nextNode;
+	} while(cursor != originalTree);
+
+	return nullptr;
+}
+
+template<class T, bool (*tgt)(const T& a, const T& b)>
+typename FibPriorityQueue<T,tgt>::HN* FibPriorityQueue<T,tgt>::findInFibBranch(HN* originalBranch, const T& value) const {
+	HN* heapNode = nullptr;
+
+	if(originalBranch->getValue() == value) return originalBranch;
+	else if(gt(value, originalBranch->getValue())) return nullptr;
+
+	//traverse recursively through fib branch
+	for(auto childNode : originalBranch->getChildNodes()) {
+		heapNode = findInFibBranch(childNode, value);
+		if(heapNode != nullptr)
+			return heapNode;
+	}
+	return nullptr;
 }
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
@@ -639,10 +683,10 @@ template<class T, bool (*tgt)(const T& a, const T& b)>
 FibPriorityQueue<T,tgt>::Iterator::~Iterator()
 {}
 
-/*
+
 template<class T, bool (*tgt)(const T& a, const T& b)>
 T FibPriorityQueue<T,tgt>::Iterator::erase() {
-	if (expected_mod_count != ref_pq->mod_count)
+/*	if (expected_mod_count != ref_pq->mod_count)
 		throw ConcurrentModificationError("FibPriorityQueue::Iterator::erase");
 	if (!can_erase)
 		throw CannotEraseError("FibPriorityQueue::Iterator::erase Iterator cursor already erased");
@@ -661,9 +705,12 @@ T FibPriorityQueue<T,tgt>::Iterator::erase() {
 			break;
 		}
 
-	expected_mod_count = ref_pq->mod_count;
-	return to_return;
-}*/
+	expected_mod_count = ref_pq->mod_count;*/
+
+	std::cout << ref_pq->findInFibTree(ref_pq->headRootNode, it.peek()) << std::endl;
+	
+	return T();
+}
 
 
 template<class T, bool (*tgt)(const T& a, const T& b)>
