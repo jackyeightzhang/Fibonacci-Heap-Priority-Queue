@@ -429,7 +429,7 @@ TEST_F(PriorityQueueTest, iterator_simple) {
   ASSERT_EQ(0,q.size());
 }
 
-/*
+
 TEST_F(PriorityQueueTest, iterator_erase) {
   std::string qvalues[] ={"a","b","c","d","e","f","g","h","i","j"};
   PriorityQueueTypeStr q;
@@ -513,7 +513,7 @@ TEST_F(PriorityQueueTest, iterator_exception_concurrent_modification_error) {
   ASSERT_THROW(it++,ics::ConcurrentModificationError);
   ASSERT_THROW(*it,ics::ConcurrentModificationError);
 }
-*/
+
 
 TEST_F(PriorityQueueTest, constructors) {
   //default

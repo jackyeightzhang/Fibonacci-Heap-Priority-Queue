@@ -64,11 +64,11 @@ class DriverPriorityQueue {
         try {
           std::cout << "\n"+preface+"i = " << i.str() << std::endl;
           std::string i_command = ics::prompt_string(preface+
-              "Enter iterator command(<[<]/*/+[+i]/i[++]/c[ommands]/*a[ll]/f[or]/q[uit])","",allowable);
+              "Enter iterator command(<[<]/[e]rase/*/+[+i]/i[++]/c[ommands]/*a[ll]/ea[ll]/f[or]/q[uit])","",allowable);
           if (i_command == "<")
             std::cout << preface+"  << = " << i << std::endl;
-//          else if (i_command == "e")
-//            std::cout << preface+"  erase = " << i.erase() << std::endl;
+          else if (i_command == "e")
+            std::cout << preface+"  erase = " << i.erase() << std::endl;
           else if (i_command == "*")
             std::cout << preface+"  * = " << *i << std::endl;
           else if (i_command == "+")
@@ -83,12 +83,12 @@ class DriverPriorityQueue {
               std::cout << preface+"  *(all) = " << *i << std::endl;
             std::cout << preface+"  finally i = " << i << std::endl;
           }
-//          else if (i_command == "ea") {
-//            std::cout << preface+"  initially i = " << i << std::endl;
-//           for (; i != q.end(); ++i)
-//              std::cout << preface+"  erase(all) = " << i.erase() << std::endl;
-//            std::cout << preface+"  finally i = " << i << std::endl;
-//          }
+          else if (i_command == "ea") {
+            std::cout << preface+"  initially i = " << i << std::endl;
+           for (; i != q.end(); ++i)
+              std::cout << preface+"  erase(all) = " << i.erase() << std::endl;
+            std::cout << preface+"  finally i = " << i << std::endl;
+          }
           else if (i_command == "f") {
             for (auto v : q)
               std::cout << preface+"  *(all) = " << v << std::endl;
