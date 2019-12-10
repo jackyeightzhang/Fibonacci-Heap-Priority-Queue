@@ -11,7 +11,6 @@
 #include <utility>					//For std::swap function
 #include "array_stack.hpp"			//See operator <<
 #include "array_set.hpp"
-#include "hash_map.hpp"
 #include "array_queue.hpp"
 namespace ics {
 

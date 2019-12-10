@@ -5,18 +5,11 @@
 #include "gtest/gtest.h"
 #include "array_stack.hpp"           // must leave in for constructor
 #include "array_priority_queue.hpp"  // must leave in for large_scale
-#include "heap_priority_queue.hpp"
 #include "fib_priority_queue.hpp"
 
 bool gt_string  (const std::string& a, const std::string& b) {return a < b;}
 bool gt_string2 (const std::string& a, const std::string& b) {return a > b;}
 bool gt_int     (const int& a, const int& b) {return a < b;}
-/*
-typedef ics::HeapPriorityQueue<std::string,gt_string>   PriorityQueueTypeStr;
-typedef ics::HeapPriorityQueue<std::string,gt_string2>  PriorityQueueTypeStrR;
-typedef ics::HeapPriorityQueue<int,gt_int>              PriorityQueueTypeInt;
-typedef ics::HeapPriorityQueue<std::string>             PriorityQueueTypeNone;
-*/
 
 typedef ics::FibPriorityQueue<std::string,gt_string>   PriorityQueueTypeStr;
 typedef ics::FibPriorityQueue<std::string,gt_string2>  PriorityQueueTypeStrR;
